@@ -20,11 +20,10 @@ function App() {
 }
 
 const Draggable: React.FC<React.PropsWithChildren<any>> = () => {
-	const { setRef, offset } = useDnd({ id: 'test123' })
-	console.log(offset)
+	const x = useDnd({ id: 'test123' })
 	return (
 		<div
-			ref={setRef}
+			ref={x.setRef}
 			style={{
 				width: 100,
 				height: 100,
@@ -32,7 +31,6 @@ const Draggable: React.FC<React.PropsWithChildren<any>> = () => {
 				display: 'flex',
 				justifyContent: 'center',
 				alignItems: 'center',
-				transform: `translate(${offset?.x}px, ${offset?.y}px)`,
 			}}>
 			Draggable
 		</div>

@@ -5,7 +5,6 @@ interface DndEvents {
     sort?: boolean
 }
 
-
 export class DndElement {
     public id: UniqueId;
     public domNode: HTMLElement
@@ -20,9 +19,9 @@ export class DndElement {
     }
     public listeners: {
         drag: {
-            mousemove?: (ev: MouseEvent) => void
-            mouseup?: (ev: MouseEvent) => void
-            mousedown?: (ev: MouseEvent) => void
+            mousemove?: (ev: MouseEvent) => void[]
+            mouseup?: (ev: MouseEvent) => void[]
+            mousedown?: (ev: MouseEvent) => void[]
         },
         drop: ((ev: MouseEvent) => void)[],
         sort: ((ev: MouseEvent) => void)[]
@@ -47,5 +46,7 @@ export class DndElement {
             drop: [],
             sort: []
         }
+    }
+    public registerEvents() {
     }
 }
