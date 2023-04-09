@@ -1,22 +1,37 @@
-import React, {
-	DragEvent,
-	PropsWithChildren,
-	createContext,
-	useContext,
-	useMemo,
-	startTransition,
-} from 'react'
-import { DndElement, UniqueId } from '../utils/DndElement'
-import { produce, enableMapSet } from 'immer'
-import InternalContext from './stores/InternalContext'
-enableMapSet()
+import React, { PropsWithChildren, createContext, useEffect, useRef } from "react"
 
-/* 
-STRUCTURE: InternalContext holds all the elements and their state
-DndContext is the context responsible for tracking the dragged element state and it will be updated frequently
-*/
 
-export const DndProvider = ({ children }: PropsWithChildren) => {
-	return <InternalContext>{children}</InternalContext>
+export type UniqueId = string | number
+
+interface DndContext {
+	active?: React.MutableRefObject<UniqueId | undefined>
+	elements?: Map<UniqueId, {}>
+	isDragging: boolean
+
 }
-export default DndProvider
+
+export const Context = createContext<DndContext>({
+	active: undefined,
+	isDragging: false
+})
+
+
+export const Provider = ({ children }: PropsWithChildren) => {
+
+	const activeElement = useRef<UniqueId>()
+	const context = useRef<DndContext>({
+		active: activeElement,
+		elements: new Map(),
+		isDragging: false
+
+	})
+
+	React.useEffect(() => {
+		const showState = (ev: KeyboardEvent) => { if (ev.key === 'X') console.log(context.current) }
+		window.addEventListener('keydown', showState)
+		return () => { window.removeEventListener('keydown', showState) }
+	}, [])
+
+	return <Context.Provider value={context.current}>{children}</Context.Provider>
+}
+export default Provider

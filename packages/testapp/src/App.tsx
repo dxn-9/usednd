@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useDnd, DndProvider } from 'lib'
+import { useDnd, Provider } from 'lib'
 import './App.css'
 
 function App() {
@@ -8,7 +8,7 @@ function App() {
 
 	return (
 		<main>
-			<DndProvider>{count % 2 == 0 && <Draggable />}</DndProvider>
+			<Provider>{count % 2 == 0 && <Draggable />}</Provider>
 			<button
 				onClick={() => {
 					setCount(count + 1)
@@ -20,10 +20,10 @@ function App() {
 }
 
 const Draggable: React.FC<React.PropsWithChildren<any>> = () => {
-	const x = useDnd({ id: 'test123' })
+	const { setNode, events } = useDnd(1)
 	return (
 		<div
-			ref={x.setRef}
+			ref={setNode}
 			style={{
 				width: 100,
 				height: 100,
@@ -31,7 +31,10 @@ const Draggable: React.FC<React.PropsWithChildren<any>> = () => {
 				display: 'flex',
 				justifyContent: 'center',
 				alignItems: 'center',
-			}}>
+			}}
+
+			{...events}
+		>
 			Draggable
 		</div>
 	)
