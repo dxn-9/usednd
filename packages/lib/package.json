@@ -11,7 +11,8 @@
 	"license": "ISC",
 	"dependencies": {
 		"immer": "^9.0.19",
-		"react": "^18.2.0"
+		"react": "^18.2.0",
+		"react-dom": "latest"
 	},
 	"devDependencies": {
 		"@types/react": "^18.0.28",

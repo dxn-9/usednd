@@ -1,37 +1,58 @@
-import React, { useContext, useEffect, useRef } from 'react'
+import React, { createElement, useContext, useEffect, useRef, useState } from 'react'
 import { Context, UniqueId } from '../Context/DndContext'
+import { createPortal } from 'react-dom'
+
+
+interface DndOptions {
+    draggable: boolean
+    droppable: boolean
+}
 
 
 
-export const useDnd = (id: UniqueId,) => {
+
+
+export const useDnd = (id: UniqueId, options: DndOptions = { draggable: true, droppable: true }) => {
     const context = useContext(Context)
     const nodeRef = useRef<HTMLElement | null>(null)
+    const [isOver, setIsOver] = useState(false)
 
     const setNode = (node: HTMLElement | null) => {
         nodeRef.current = node // this is to make ts happy 
     }
-
-    console.log(context)
+    console.log('useDnd render')
     const events = {
-        onDragStart: (ev: React.MouseEvent) => { context.active!.current = id; context.isDragging = true },
-        onDragEnd: (ev: React.MouseEvent) => { context.active!.current = undefined; context.isDragging = false }
+
+        onPointerDown: (ev: React.PointerEvent) => {
+            context.onPointerDown?.(ev, id)
+        },
+        onPointerEnter: (ev: React.PointerEvent) => {
+            context.onPointerEnter(id)
+            if (context.overElement?.current?.id === id) {
+                console.log('is over true', context.overElement)
+                setIsOver(true)
+            }
+        },
+        onPointerLeave: (ev: React.PointerEvent) => {
+            context.onPointerLeave(id)
+            if (isOver) {
+                setIsOver(false)
+            }
+        }
 
     }
 
     useEffect(() => {
         if (nodeRef.current) {
-            nodeRef.current.draggable = true
-            context.elements?.set(id, {
-                rect: nodeRef.current.getClientRects(),
-
-            })
-
+            context.register(id, nodeRef.current)
         } else {
-            console.log('You need to bind the node!')
+            throw new Error(' You need to register an element!')
         }
-
-        return () => { }
+        return () => {
+            context.unregister(id)
+        }
     }, [])
-    return { setNode, events }
+    return { setNode, events, isOver }
 
 }
+
