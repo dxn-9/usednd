@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, createContext, useEffect, useRef } from "react"
+import React, { PropsWithChildren, cloneElement, createContext, useEffect, useRef } from "react"
 
 
 export type UniqueId = string | number
@@ -9,10 +9,12 @@ interface DndContext {
 	ghostNode?: React.MutableRefObject<Node | HTMLElement | null>
 	activeElement?: React.MutableRefObject<Element | null>
 	overElement?: React.MutableRefObject<Element | null>
+	overStack?: React.MutableRefObject<Element[]>
 	isDragging: boolean
 	onPointerDown: (ev: React.PointerEvent, elementId: UniqueId) => void
-	onPointerEnter: (elementId: UniqueId) => void
-	onPointerLeave: (elementId: UniqueId) => void
+	onPointerEnter: (ev: React.PointerEvent, elementId: UniqueId) => void
+	onPointerLeave: (ev: React.PointerEvent, elementId: UniqueId) => void
+	onPointerUp: (ev: React.PointerEvent, elementId: UniqueId) => void
 	register: (id: UniqueId, node: HTMLElement, data?: any) => void
 	unregister: (id: UniqueId) => void
 
@@ -25,7 +27,8 @@ export const Context = createContext<DndContext>({
 	unregister: () => { },
 	onPointerDown: () => { },
 	onPointerEnter: () => { },
-	onPointerLeave: () => { }
+	onPointerLeave: () => { },
+	onPointerUp: () => { }
 
 })
 
@@ -33,31 +36,41 @@ export const Context = createContext<DndContext>({
 interface Element {
 	id: UniqueId
 	node: HTMLElement
+	rect: { left: number; top: number; width: number; height: number; center: [number, number] }
+	draggable: boolean;
+	droppable: boolean;
 	data: any
 }
 
 interface Props {
-	onDrop?: (ev: PointerEvent, active: Element, over: Element) => any
+	onDrop?: (ev: React.PointerEvent, active: Element, over: Element) => any
+	debug: boolean
 }
 
 
-export const Provider = ({ children, onDrop }: PropsWithChildren<Props>) => {
+export const Provider = ({ children, onDrop, debug = false }: PropsWithChildren<Props>) => {
+
+
+	const [debugLine, setDebugLine] = React.useState({ x1: 100, y1: 100, x2: 0, y2: 0 })
 
 	const activeElement = useRef<Element | null>(null)
+	const overStack = useRef<Element[]>([])
 	const overElement = useRef<Element | null>(null)
 	const ghostNode = useRef<Node | HTMLElement | null>(null)
 	const context = useRef<DndContext>({
 		elements: new Map(),
 		isDragging: false,
 		ghostNode,
+		overStack,
 		overElement,
 		activeElement,
 
 		onPointerDown: (ev, id) => {
+			ev.stopPropagation()
+			console.log('pointer down', id)
 			const active = context.current?.elements?.get(id)
 			if (!active) throw new Error('Something went wrong')
 			activeElement.current = active
-			overElement.current = null
 
 			const clone = active.node.cloneNode(true)
 			document.body.append(clone)
@@ -76,19 +89,58 @@ export const Provider = ({ children, onDrop }: PropsWithChildren<Props>) => {
 				document.body.style.cursor = 'move'
 			}
 		},
-		onPointerEnter: (id) => {
+		onPointerEnter: (ev, id) => {
 			if (context.current.isDragging) {
 				const overEl = context.current.elements?.get(id)
 				/** activeElement and overElement */
-				if (overEl && overEl !== activeElement.current) overElement.current = overEl
+				if (overEl && overEl !== activeElement.current) {
+					overStack.current.push(overEl)
+					overElement.current = overEl;
+				}
 
 			}
 		},
-		onPointerLeave: (id) => {
-			overElement.current = null
+		onPointerLeave: (ev, id) => {
+			overStack.current.pop()
+			overElement.current = overStack.current[overStack.current.length - 1];
+		},
+		onPointerUp: (ev, id) => {
+
+
+			/** Get rid of ghost */
+			if (ghostNode.current && isElement(ghostNode.current)) {
+				ghostNode.current.remove()
+				ghostNode.current = null
+			}
+
+			/** Cleanup */
+			if (activeElement.current) {
+				activeElement.current.node.style.opacity = '1.0'
+				activeElement.current = null;
+			}
+			overStack.current = []
+			context.current.isDragging = false
+			if (activeElement.current && overElement.current) {
+				onDrop?.(ev, activeElement.current, overElement.current)
+			}
 		},
 		register: (id, node, data) => {
-			context.current.elements?.set(id, { node, id, data })
+
+			const geometry = node.getBoundingClientRect()
+			console.log('on register geometry', geometry, { ...geometry })
+			const center: [number, number] = [geometry.left + geometry.width / 2, geometry.top + geometry.height / 2]
+			console.log('registering', id, center)
+			context.current.elements?.set(id, {
+				node, id, data, rect: {
+					center,
+					top: geometry.top,
+					left: geometry.left,
+					width: geometry.width,
+					height: geometry.height
+				}, // cant spread geometry for some reason?
+				draggable: true,
+				droppable: true
+			})
 			node.style.touchAction = 'manipulation'
 			node.style.userSelect = 'none'
 			console.log('REGISTERED:', context.current.elements)
@@ -105,37 +157,20 @@ export const Provider = ({ children, onDrop }: PropsWithChildren<Props>) => {
 	useEffect(() => {
 
 		function pointerMove(e: PointerEvent) {
+
+			const c = computeClosestDroppable(e, context.current.elements!, context.current.activeElement)
+			if (c.line) {
+				setDebugLine(c.line)
+			}
+			console.log('closest is', c.closestElement?.id)
+
 			if (ghostNode.current && isElement(ghostNode.current)) {
 				ghostNode.current.style.transform = `translate(${e.pageX + ghostNode.current.clientWidth / 2}px,${e.pageY + ghostNode.current.clientHeight / 2}px)`
 			}
 		}
-		function pointerUp(e: PointerEvent) {
-
-			if (activeElement.current && overElement.current) {
-				onDrop?.(e, activeElement.current, overElement.current)
-			}
-
-			console.log('pointer up', activeElement.current, overElement.current)
-
-			/** Get rid of ghost */
-			if (ghostNode.current && isElement(ghostNode.current)) {
-				ghostNode.current.remove()
-				ghostNode.current = null
-			}
-
-			/** Cleanup */
-			if (activeElement.current) {
-				activeElement.current.node.style.opacity = '1.0'
-				activeElement.current = null;
-			}
-			overElement.current = null
-			context.current.isDragging = false
-		}
 		window.addEventListener('pointermove', pointerMove)
-		window.addEventListener('pointerup', pointerUp)
 		return () => {
 			window.removeEventListener('pointermove', pointerMove);
-			window.removeEventListener('pointerup', pointerUp);
 		}
 	}, [])
 
@@ -149,10 +184,59 @@ export const Provider = ({ children, onDrop }: PropsWithChildren<Props>) => {
 
 	}, [])
 
-	return <Context.Provider value={context.current}>{children}</Context.Provider>
+	return <Context.Provider value={context.current}>
+		<svg viewBox={`0 0 ${window.innerWidth} ${window.innerHeight}`}>
+			<line x1={debugLine.x1} y1={debugLine.y1} x2={debugLine.x2} y2={debugLine.y2} stroke='red'></line>
+		</svg>
+		{children}</Context.Provider>
 }
 export default Provider
 
 function isElement(node: Node): node is HTMLElement {
 	return node.isConnected
+}
+
+
+function computeClosestDroppable(ev: PointerEvent, allElements: Map<UniqueId, Element>, active?: Element) {
+
+	// max 32bit uint 
+	let closestDistance = -1 >>> 1 // other cool way is ~0 >>> 1
+	let closestElement: Element | null = null
+
+	let line = { x1: ev.pageX, y1: ev.pageY, x2: 0, y2: 0 }
+
+	for (const [id, element] of allElements) {
+		if (element.id === active?.id) continue // do not calculate the active 
+		if (!element.droppable) continue
+
+		// {here i could insert a reducer function given by user to calculate available targets based on arbitrary data}
+
+
+		/** doing a little bit of trigonometry  */
+
+		const distanceToCenter = Math.sqrt(Math.pow(ev.pageX - element.rect.center[0], 2) + Math.pow(ev.pageY - element.rect.center[1], 2))
+
+
+		const angleSin = (Math.abs(ev.pageY - element.rect.center[1])) / distanceToCenter
+		const angleCos = (Math.abs(ev.pageX - element.rect.center[0])) / distanceToCenter
+
+		const length = (element.rect.height / 2) * ((element.rect.width / 2) / (element.rect.height / 2))
+		const internalDist = (Math.sqrt(Math.pow(angleSin, 2) + Math.pow(angleCos, 2))) * length
+		const distance = distanceToCenter - internalDist;
+
+		if (distance < closestDistance) {
+			line.x2 = element.rect.center[0] + (ev.pageX > element.rect.center[0] ? angleCos * length : - angleCos * length)
+			line.y2 = element.rect.center[1] + (ev.pageY > element.rect.center[1] ? angleSin * length : - angleSin * length)
+			closestDistance = distance;
+			closestElement = element
+		}
+
+	}
+
+	console.log(line)
+
+
+	return { closestDistance, closestElement, line }
+
+
 }
