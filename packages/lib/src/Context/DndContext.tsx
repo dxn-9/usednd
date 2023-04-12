@@ -51,7 +51,6 @@ interface Props {
 export const Provider = ({ children, onDrop, debug = false }: PropsWithChildren<Props>) => {
 
 
-	const [debugLine, setDebugLine] = React.useState({ x1: 100, y1: 100, x2: 0, y2: 0 })
 
 	const activeElement = useRef<Element | null>(null)
 	const overStack = useRef<Element[]>([])
@@ -157,12 +156,10 @@ export const Provider = ({ children, onDrop, debug = false }: PropsWithChildren<
 	useEffect(() => {
 
 		function pointerMove(e: PointerEvent) {
-
-			const c = computeClosestDroppable(e, context.current.elements!, context.current.activeElement)
-			if (c.line) {
-				setDebugLine(c.line)
+			if (activeElement.current && context.current.elements) {
+				computeClosestDroppable(e, context.current.elements, activeElement.current)
 			}
-			console.log('closest is', c.closestElement?.id)
+
 
 			if (ghostNode.current && isElement(ghostNode.current)) {
 				ghostNode.current.style.transform = `translate(${e.pageX + ghostNode.current.clientWidth / 2}px,${e.pageY + ghostNode.current.clientHeight / 2}px)`
@@ -184,11 +181,7 @@ export const Provider = ({ children, onDrop, debug = false }: PropsWithChildren<
 
 	}, [])
 
-	return <Context.Provider value={context.current}>
-		<svg viewBox={`0 0 ${window.innerWidth} ${window.innerHeight}`}>
-			<line x1={debugLine.x1} y1={debugLine.y1} x2={debugLine.x2} y2={debugLine.y2} stroke='red'></line>
-		</svg>
-		{children}</Context.Provider>
+	return <Context.Provider value={context.current}>{children}</Context.Provider>
 }
 export default Provider
 
@@ -221,7 +214,7 @@ function computeClosestDroppable(ev: PointerEvent, allElements: Map<UniqueId, El
 		const angleCos = (Math.abs(ev.pageX - element.rect.center[0])) / distanceToCenter
 
 		const length = (element.rect.height / 2) * ((element.rect.width / 2) / (element.rect.height / 2))
-		const internalDist = (Math.sqrt(Math.pow(angleSin, 2) + Math.pow(angleCos, 2))) * length
+		const internalDist = length
 		const distance = distanceToCenter - internalDist;
 
 		if (distance < closestDistance) {
@@ -233,7 +226,6 @@ function computeClosestDroppable(ev: PointerEvent, allElements: Map<UniqueId, El
 
 	}
 
-	console.log(line)
 
 
 	return { closestDistance, closestElement, line }
