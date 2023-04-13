@@ -1,5 +1,5 @@
 import React, { createElement, useContext, useEffect, useRef, useState } from 'react'
-import { Context, UniqueId } from '../Context/DndContext'
+import { Context, UniqueId, compareObjects, getElementRect } from '../Context/DndContext'
 import { createPortal } from 'react-dom'
 
 
@@ -16,7 +16,6 @@ export const useDnd = (id: UniqueId, options: DndOptions = { draggable: true, dr
     const context = useContext(Context)
     const nodeRef = useRef<HTMLElement | null>(null)
     const [over, setOver] = useState<{ isOver: boolean; direction: [number, number] }>({ isOver: false, direction: [0, 0] }) // vector2 representing the direction of the cursor - have to make it an object to avoid impossible states
-
     const setNode = (node: HTMLElement | null) => {
         nodeRef.current = node // this is to make ts happy 
     }
@@ -32,7 +31,6 @@ export const useDnd = (id: UniqueId, options: DndOptions = { draggable: true, dr
             if (context.isDragging && nodeRef.current && id === context.overElement?.current?.id) {
                 /** lets assume that every element is a box to not make center calculation too hard */
                 const newDirection = computeDirection(ev, nodeRef.current!.getBoundingClientRect())
-                console.log('new dir', newDirection)
                 if (newDirection[0] === over.direction[0] && newDirection[1] === over.direction[1]) {
                     // dont cause re render if direction is the same
                     return
@@ -55,9 +53,6 @@ export const useDnd = (id: UniqueId, options: DndOptions = { draggable: true, dr
             }
             context.onPointerLeave(ev, id)
         },
-        onPointerUp: (ev: React.PointerEvent) => {
-            context.onPointerUp(ev, id)
-        }
 
     }
 
@@ -71,6 +66,21 @@ export const useDnd = (id: UniqueId, options: DndOptions = { draggable: true, dr
             context.unregister(id)
         }
     }, [])
+    useEffect(() => {
+        /** check on every render if the position has changed, if so update the context */
+
+        const contextElem = context.elements?.get(id)
+        if (contextElem && nodeRef.current) {
+
+            if (!compareObjects(contextElem.rect, getElementRect(nodeRef.current))) {
+                // recompute the element box
+                console.log('recalculating')
+                contextElem.rect = getElementRect(nodeRef.current)
+            }
+
+        }
+
+    })
     return { setNode, events, over }
 
 }
