@@ -1,5 +1,6 @@
 import React, { createElement, useContext, useEffect, useRef, useState } from 'react'
-import { Context, UniqueId, compareObjects, getElementRect } from '../Context/DndContext'
+import { Context, UniqueId, } from '../Context/DndContext'
+import { compareObjects, getElementRect } from '../utils'
 import { createPortal } from 'react-dom'
 
 
