@@ -34,7 +34,7 @@ export const Context = createContext<DndContext>({
 
 export interface ElementRect {
 
-	left: number; top: number; width: number; height: number; center: [number, number]
+	left: number; top: number; width: number; height: number; center: [number, number]; angle: number
 }
 export interface Element {
 	id: UniqueId
@@ -135,6 +135,7 @@ export const Provider = ({ children, onDrop, debug = false }: PropsWithChildren<
 					line.setAttribute('y1', result.line.y1.toString())
 					line.setAttribute('y2', result.line.y2.toString())
 				}
+				console.log('closest', result.closestElement?.id)
 			}
 
 
