@@ -1,11 +1,12 @@
 import { UniqueId, Element, ElementRect } from "../Context/DndContext"
+import { DirectionType } from "../hooks/useDnd"
 
 export function computeClosestDroppable(ev: PointerEvent, allElements: Map<UniqueId, Element>, active?: Element) {
     // max 32bit uint 
     let closestDistance = -1 >>> 1 // other cool way is ~0 >>> 1
-    let closestElement: Element | null = null
+    let closestElement: Element | null = null;
+    let pointOfContact = { x: 0, y: 0 }
 
-    let line = { x1: ev.pageX, y1: ev.pageY, x2: 0, y2: 0 }
 
     for (const [id, element] of allElements) {
         if (element.id === active?.id) continue // do not calculate the active 
@@ -19,28 +20,29 @@ export function computeClosestDroppable(ev: PointerEvent, allElements: Map<Uniqu
         const dragAngle = Math.asin((Math.abs(ev.pageY - element.rect.center[1]) / distanceToCenter))
 
         let dist = 0
-        let x2 = 0;
-        let y2 = 0
+        let x = 0;
+        let y = 0
         if (dragAngle === element.rect.angle) {
             dist = Math.sqrt(pow2(element.rect.width) + pow2(element.rect.center[1]))
         } else if (dragAngle < element.rect.angle) {
             //get the cos
-            x2 = element.rect.width / 2
-            y2 = x2 * Math.tan(dragAngle)
-            dist = Math.sqrt(pow2(x2) + pow2(y2))
+            x = element.rect.width / 2
+            y = x * Math.tan(dragAngle)
+            dist = Math.sqrt(pow2(x) + pow2(y))
         } else {
             //get the sin
-            y2 = element.rect.height / 2
-            x2 = y2 * Math.tan(Math.PI / 2 - dragAngle)
-            dist = Math.sqrt(pow2(y2) + pow2(x2))
+            y = element.rect.height / 2
+            x = y * Math.tan(Math.PI / 2 - dragAngle)
+            dist = Math.sqrt(pow2(y) + pow2(x))
 
         }
 
         const distance = distanceToCenter - dist;
 
         if (distance < closestDistance) {
-            line.x2 = element.rect.center[0] + (ev.pageX > element.rect.center[0] ? x2 : -x2)
-            line.y2 = element.rect.center[1] + (ev.pageY > element.rect.center[1] ? y2 : - y2)
+            console.log('xy', x, y, element.id)
+            pointOfContact.x = element.rect.center[0] + (ev.pageX > element.rect.center[0] ? x : -x)
+            pointOfContact.y = element.rect.center[1] + (ev.pageY > element.rect.center[1] ? y : -y)
             closestDistance = distance;
             closestElement = element
         }
@@ -49,13 +51,14 @@ export function computeClosestDroppable(ev: PointerEvent, allElements: Map<Uniqu
 
 
 
-    return { closestDistance, closestElement, line }
+    return {
+        closestDistance, closestElement, pointOfContact
+    }
 
 }
 
 
 /** Compute the 'rect' property in Element */
-
 export function getElementRect(node: HTMLElement): ElementRect {
 
     const geometry = node.getBoundingClientRect()
@@ -70,7 +73,6 @@ export function getElementRect(node: HTMLElement): ElementRect {
 
 
 /** Very simple implementation, its mostly just to compare node's bounding boxes */
-
 export function compareObjects(obj1: Object, obj2: Object): boolean {
 
     const keys1 = Object.keys(obj1)
@@ -94,6 +96,39 @@ export function compareObjects(obj1: Object, obj2: Object): boolean {
     return areEqual
 }
 
+/** Calculate direction */
+export function computeDirection(element: Element, position: [number, number]): DirectionType {
+
+
+    const distanceToCenter = Math.sqrt(pow2(position[0] - element.rect.center[0]) + pow2(position[1] - element.rect.center[1]))
+    const dragAngle = Math.asin((Math.abs(position[1] - element.rect.center[1]) / distanceToCenter))
+
+    const x = position[0] - element.rect.center[0]
+    const y = position[1] - element.rect.center[1]
+    const vector = normalize([x, y])
+
+    console.log('vector', vector)
+    return {
+        vector,
+        up: y <= 0 && dragAngle >= element.rect.angle,
+        down: y > 0 && dragAngle >= element.rect.angle,
+        left: x <= 0 && dragAngle < element.rect.angle,
+        right: x > 0 && dragAngle < element.rect.angle
+    }
+
+
+}
+
+
+
+
+
 export function pow2(num: number) {
     return Math.pow(num, 2)
 }
+
+export function normalize(vec: [number, number]): [number, number] {
+    const sum = Math.abs(vec[0]) + Math.abs(vec[1])
+    return [vec[0] / sum, vec[1] / sum]
+}
+

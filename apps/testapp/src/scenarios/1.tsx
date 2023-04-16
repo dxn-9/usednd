@@ -1,5 +1,5 @@
 import { Provider, useDnd } from 'lib'
-import React, { useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 
 const Scenario1 = () => {
 
@@ -9,7 +9,7 @@ const Scenario1 = () => {
 
 
     console.log(droppedMap)
-    return <Provider debug={true} onDrop={(ev, active, over) => {
+    return <Provider debug={true} outsideThreshold={10000} onDrop={(ev, active, over) => {
         console.log('drop', over, droppedMap)
         setDroppedMap((prev) => ({ ...prev, [over.id]: prev[over.id as keyof typeof prev] as number + 1 }))
 
@@ -32,10 +32,25 @@ const Draggable = () => {
 }
 
 const Droppable = ({ idKey, droppedCount, ...props }: React.HTMLAttributes<HTMLDivElement> & { idKey: number; droppedCount?: number }) => {
-    const { setNode, events } = useDnd(idKey)
+    const { setNode, events, over } = useDnd(idKey)
     const randomWidth = useRef(Math.random())
 
-    return <div ref={setNode} {...events} className={`bg-red-600/5 w-${randomWidth.current > 0.5 ? '24' : '48'} h-24 absolute -translate-x-1/2 -translate-y-1/2`} {...props}>Droppable - {idKey} - Dropped: {droppedCount}</div>
+    let overStyle = ''
+    if (over.direction?.left) {
+        overStyle = 'border-l-4 border-red'
+    } else if (over.direction?.up) {
+        overStyle = 'border-t-4 border-red'
+    } else if (over.direction?.down) {
+        overStyle = 'border-b-4 border-red'
+    } else if (over.direction?.right) {
+        overStyle = 'border-r-4 border-red'
+    }
+
+
+
+
+
+    return <div ref={setNode} {...events} className={`bg-red-600/5 w-${randomWidth.current > 0.5 ? '24' : '48'} h-24 absolute -translate-x-1/2 -translate-y-1/2 ${overStyle}`} {...props}>Droppable - {idKey} - Dropped: {droppedCount}</div>
 }
 
 export default Scenario1

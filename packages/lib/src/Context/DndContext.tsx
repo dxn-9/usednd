@@ -1,6 +1,43 @@
 import React, { PropsWithChildren, cloneElement, createContext, useEffect, useRef, useState } from "react"
 import { compareObjects, computeClosestDroppable, getElementRect } from '../utils'
 
+export interface ElementRect {
+
+	angle: number
+	left: number
+	top: number
+	width: number
+	height: number
+	center: [number, number]
+}
+
+
+
+
+export interface DndEvent extends PointerEvent {
+	dnd: {
+		active: Element
+		over: Element
+		pointOfContact: [number, number]
+	}
+
+}
+
+export interface ElementCallbacks {
+
+	onOutsideOver?: (ev: DndEvent) => any
+	/** TODO: */
+	onOutsideOverLeave?: (ev: any) => any
+}
+export interface Element {
+	id: UniqueId
+	node: HTMLElement
+	rect: ElementRect
+	draggable: boolean;
+	droppable: boolean;
+	callbacks?: ElementCallbacks;
+	data: any
+}
 
 export type UniqueId = string | number
 
@@ -12,10 +49,11 @@ interface DndContext {
 	overElement?: React.MutableRefObject<Element | null>
 	overStack?: React.MutableRefObject<Element[]>
 	isDragging: boolean
+	isOutside: boolean
 	onPointerDown: (ev: React.PointerEvent, elementId: UniqueId) => void
 	onPointerEnter: (ev: React.PointerEvent, elementId: UniqueId) => void
 	onPointerLeave: (ev: React.PointerEvent, elementId: UniqueId) => void
-	register: (id: UniqueId, node: HTMLElement, data?: any) => void
+	register: (id: UniqueId, node: HTMLElement, data?: any, cb?: ElementCallbacks) => Element
 	unregister: (id: UniqueId) => void
 
 
@@ -23,7 +61,8 @@ interface DndContext {
 
 export const Context = createContext<DndContext>({
 	isDragging: false,
-	register: () => { },
+	isOutside: false,
+	register: () => { return {} as Element },
 	unregister: () => { },
 	onPointerDown: () => { },
 	onPointerEnter: () => { },
@@ -32,24 +71,14 @@ export const Context = createContext<DndContext>({
 })
 
 
-export interface ElementRect {
-
-	left: number; top: number; width: number; height: number; center: [number, number]; angle: number
-}
-export interface Element {
-	id: UniqueId
-	node: HTMLElement
-	rect: ElementRect
-	draggable: boolean;
-	droppable: boolean;
-	data: any
-}
 
 interface Props {
 	onDrop?: (ev: PointerEvent, active: Element, over: Element) => any
 	debug?: boolean
+	/** distance for mouse to element to trigger the over effect */
+	outsideThreshold?: number
 }
-export const Provider = ({ children, onDrop, debug = false }: PropsWithChildren<Props>) => {
+export const Provider = ({ children, onDrop, debug = false, outsideThreshold = 100 }: PropsWithChildren<Props>) => {
 
 	const activeElement = useRef<Element | null>(null)
 	const overStack = useRef<Element[]>([])
@@ -58,6 +87,7 @@ export const Provider = ({ children, onDrop, debug = false }: PropsWithChildren<
 	const context = useRef<DndContext>({
 		elements: new Map(),
 		isDragging: false,
+		isOutside: false,
 		ghostNode,
 		overStack,
 		overElement,
@@ -76,7 +106,10 @@ export const Provider = ({ children, onDrop, debug = false }: PropsWithChildren<
 
 			if (isElement(ghostNode.current) && active.node) {
 				console.log('inside')
-				context.current.isDragging = true;
+				context.current.isDragging = true
+				context.current.isOutside = true
+
+				/** Temp styling */
 				active.node.style.opacity = '0.5'
 				const ghostRect = ghostNode.current.getBoundingClientRect()
 				ghostNode.current.style.position = 'absolute';
@@ -87,9 +120,22 @@ export const Provider = ({ children, onDrop, debug = false }: PropsWithChildren<
 				active.node.style.cursor = 'move'
 				document.body.style.cursor = 'move'
 			}
+
 		},
 		onPointerEnter: (ev, id) => {
+			/** When the pointer enters a registered element */
+
 			if (context.current.isDragging) {
+
+				if (context.current.isOutside) {
+					/** Clear the over element */
+					overStack.current = []
+					overElement.current = null
+
+				}
+
+				context.current.isOutside = false
+
 				const overEl = context.current.elements?.get(id)
 				/** activeElement and overElement */
 				if (overEl && overEl !== activeElement.current) {
@@ -100,18 +146,27 @@ export const Provider = ({ children, onDrop, debug = false }: PropsWithChildren<
 			}
 		},
 		onPointerLeave: (ev, id) => {
+			/** When the pointer exits a registered element */
 			overStack.current.pop()
 			overElement.current = overStack.current[overStack.current.length - 1];
+
+			if (!overElement.current) {
+				context.current.isOutside = true
+			}
+
 		},
-		register: (id, node, data) => {
+		register: (id, node, data, callbacks = {}) => {
 
 			const rect = getElementRect(node)
-			context.current.elements?.set(id, {
+			const element: Element = {
 				node, id, data, rect, draggable: true,
-				droppable: true
-			})
+				droppable: true,
+				callbacks,
+			}
+			context.current.elements?.set(id, element)
 			node.style.touchAction = 'manipulation'
 			node.style.userSelect = 'none'
+			return element
 		},
 		unregister: (id) => {
 			context.current.elements?.delete(id)
@@ -125,17 +180,37 @@ export const Provider = ({ children, onDrop, debug = false }: PropsWithChildren<
 	useEffect(() => {
 
 		function pointerMove(ev: PointerEvent) {
-			if (activeElement.current && context.current.elements) {
-				const result = computeClosestDroppable(ev, context.current.elements, activeElement.current)
-				if (result.line && debug) {
-					/** Update debug line if debug */
-					const line = document.querySelector('#dnd-debug-view') as SVGLineElement
-					line.setAttribute('x1', result.line.x1.toString())
-					line.setAttribute('x2', result.line.x2.toString())
-					line.setAttribute('y1', result.line.y1.toString())
-					line.setAttribute('y2', result.line.y2.toString())
+			if (context.current.isDragging && context.current.isOutside) {
+				// if its dragging and its not inside a droppable element
+				// const g = performance.now()
+				const result = computeClosestDroppable(ev, context.current.elements!, activeElement.current!)
+				// console.log('PERFORMANCE:', performance.now() - g)
+
+				if (result.closestDistance < outsideThreshold) {
+					if (debug) {
+						/** Update debug line if debug - just do it imperatively so it doesnt affect react performance */
+						const line = document.querySelector('#dnd-debug-view') as SVGLineElement
+						line.setAttribute('x1', ev.pageX.toString())
+						line.setAttribute('x2', result.pointOfContact.x.toString())
+						line.setAttribute('y1', ev.pageY.toString())
+						line.setAttribute('y2', result.pointOfContact.y.toString())
+					}
+
+
+					if (result.closestElement !== overElement.current) {
+						/** If it changed element fire the event and change state */
+
+						overElement.current?.callbacks?.onOutsideOverLeave?.({})
+						overStack.current[0] = result.closestElement as Element
+						overElement.current = result.closestElement;
+
+					}
+
+					result.closestElement?.callbacks?.onOutsideOver?.({
+						...ev, dnd: { active: activeElement.current!, over: result.closestElement, pointOfContact: [result.pointOfContact.x, result.pointOfContact.y] }
+					})
+
 				}
-				console.log('closest', result.closestElement?.id)
 			}
 
 
@@ -158,9 +233,11 @@ export const Provider = ({ children, onDrop, debug = false }: PropsWithChildren<
 				/** Cleanup */
 				activeElement.current.node.style.opacity = '1.0'
 				activeElement.current = null;
-				overStack.current = []
-				context.current.isDragging = false
 			}
+			overStack.current = []
+			overElement.current?.callbacks?.onOutsideOverLeave?.({})
+			overElement.current = null
+			context.current.isDragging = false
 
 		}
 		window.addEventListener('pointermove', pointerMove)
