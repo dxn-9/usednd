@@ -26,13 +26,13 @@ const Scenario1 = () => {
 
 const Draggable = () => {
 
-    const { setNode, events } = useDnd('drag')
+    const { setNode, listeners } = useDnd('drag')
 
-    return <div ref={setNode} className='w-10 h-10 bg-yellow-300/10 absolute left-1/2 top-1/2 z-10' {...events}>Drag</div>
+    return <div ref={setNode} className='w-10 h-10 bg-yellow-300/10 absolute left-1/2 top-1/2 z-10' {...listeners}>Drag</div>
 }
 
 const Droppable = ({ idKey, droppedCount, ...props }: React.HTMLAttributes<HTMLDivElement> & { idKey: number; droppedCount?: number }) => {
-    const { setNode, events, over } = useDnd(idKey)
+    const { setNode, listeners, over } = useDnd(idKey)
     const randomWidth = useRef(Math.random())
 
     let overStyle = ''
@@ -50,7 +50,7 @@ const Droppable = ({ idKey, droppedCount, ...props }: React.HTMLAttributes<HTMLD
 
 
 
-    return <div ref={setNode} {...events} className={`bg-red-600/5 w-${randomWidth.current > 0.5 ? '24' : '48'} h-24 absolute -translate-x-1/2 -translate-y-1/2 ${overStyle}`} {...props}>Droppable - {idKey} - Dropped: {droppedCount}</div>
+    return <div ref={setNode} {...listeners} className={`bg-red-600/5 w-${randomWidth.current > 0.5 ? '24' : '48'} h-24 absolute -translate-x-1/2 -translate-y-1/2 ${overStyle}`} {...props}>Droppable - {idKey} - Dropped: {droppedCount}</div>
 }
 
 export default Scenario1

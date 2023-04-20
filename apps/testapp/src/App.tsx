@@ -2,12 +2,14 @@ import React, { PropsWithChildren, useEffect, useState } from 'react'
 import { useDnd, Provider } from 'lib'
 import Scenario1 from './scenarios/1'
 import './App.css'
+import Scenario2 from './scenarios/2'
+import Scenario3 from './scenarios/3'
 
-const availableScenarios = [<Scenario1 />]
+const availableScenarios = [<Scenario1 />, <Scenario2 />, <Scenario3 />]
 
 function App() {
 
-	const [currentScenario, setCurrentScenario] = useState(0)
+	const [currentScenario, setCurrentScenario] = useState(2)
 
 	return (
 		<main>
