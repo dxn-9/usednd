@@ -67,7 +67,7 @@ export const Provider = ({ children, outsideThreshold = 5, ...props }: PropsWith
 				context.activeElement.node.style.opacity = '1.0'
 			}
 
-			context.activeElement?.onStopActive();
+			context.activeElement?.onDragEnd(ev);
 			context.activeElement = null;
 			// }
 			context.overStack = []
@@ -115,7 +115,7 @@ export const Provider = ({ children, outsideThreshold = 5, ...props }: PropsWith
 
 			if (context.isDragging && context.activeElement) {
 
-				context.activeElement.move({ x: ev.pageX, y: ev.pageY })
+				context.activeElement.onDragMove(ev)
 
 			}
 		}

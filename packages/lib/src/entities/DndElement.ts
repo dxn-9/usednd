@@ -32,7 +32,7 @@ export class DndElement<T = unknown> {
         this.rect = getElementRect(this.node)
     }
     /** Events  */
-    public onDragStart(ev: React.PointerEvent) {
+    public onDragStart(ev: PointerEvent) {
         this.initialPoint = { x: ev.pageX, y: ev.pageY }
         this.isActive = true
 
@@ -59,19 +59,19 @@ export class DndElement<T = unknown> {
             this.node.style.transform = `translate(${this.movementDelta.x}px, ${this.movementDelta.y}px)`
         }
     }
-    public onDragMove() {
-
-    }
-
-    public move(screenPosition: Vec2) {
-        this.movementDelta.x = -(this.initialPoint.x - screenPosition.x)
-        this.movementDelta.y = -(this.initialPoint.y - screenPosition.y)
+    public onDragMove(ev: PointerEvent) {
+        this.movementDelta.x = -(this.initialPoint.x - ev.pageX)
+        this.movementDelta.y = -(this.initialPoint.y - ev.pageY)
 
         if (this.callbacks.onMove) {
             todo('onMove')
         } else {
             this.node.style.transform = `translate(${this.movementDelta.x}px, ${this.movementDelta.y}px)`
         }
+
+    }
+
+    public move(screenPosition: Vec2) {
     }
 
 

@@ -7,5 +7,5 @@ export function onPointerDown(ev: React.PointerEvent, elementId: UniqueId) {
     const ctx = Context.getState()
     const element = ctx.elements.get(elementId)
     if (!element) return
-    element.onActive(ev)
+    element.onDragStart(ev as PointerEvent)
 }
