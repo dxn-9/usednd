@@ -1,4 +1,5 @@
 import { Provider, useDnd } from 'lib'
+import { DndCollision } from 'lib/src/options/DndCollisions'
 import React, { useMemo, useRef, useState } from 'react'
 
 const Scenario1 = () => {
@@ -9,9 +10,9 @@ const Scenario1 = () => {
 
 
     console.log(droppedMap)
-    return <Provider debug={true} outsideThreshold={10000} onDrop={(ev, active, over) => {
-        console.log('drop', over, droppedMap)
-        setDroppedMap((prev) => ({ ...prev, [over.id]: prev[over.id as keyof typeof prev] as number + 1 }))
+    return <Provider debug={true} outsideThreshold={10000} collisionDetection={DndCollision.ClosestPoint} onDrop={(options) => {
+        options.over.id
+        setDroppedMap((prev) => ({ ...prev, [options.over.id]: prev[options.over.id as keyof typeof prev] as number + 1 }))
 
     }}>
         <div className='w-screen h-screen overflow-hidden '>

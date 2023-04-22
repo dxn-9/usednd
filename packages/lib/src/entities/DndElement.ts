@@ -1,9 +1,13 @@
 import React from "react";
-import { DndElementRect, DndElementCallbacks, UniqueId, Vec2 } from "../context/ContextTypes";
+import { DndElementRect, UniqueId, Vec2 } from "../context/ContextTypes";
 import { getElementRect, pow2, todo } from "../utils";
-import { Context, xdTest } from "../context/DndContext";
+import { Context } from "../context/DndContext";
+import { DndElementEvents, DndPointerEvent } from "../options/DndEvents";
 
-export class DndElement<T = unknown> {
+
+
+
+export class DndElement<T = unknown>  {
     id: UniqueId
     node: HTMLElement
     rect!: DndElementRect;
@@ -12,10 +16,11 @@ export class DndElement<T = unknown> {
     movementDelta: Vec2
     initialPoint: Vec2
     isActive: boolean
-    callbacks?: DndElementCallbacks
+    isOver: boolean
+    callbacks?: DndElementEvents
     data?: T
 
-    constructor(id: UniqueId, node: HTMLElement, options: { draggable: boolean, droppable: boolean, callbacks?: ElementCallbacks, data?: T }) {
+    constructor(id: UniqueId, node: HTMLElement, options: { draggable: boolean, droppable: boolean, callbacks?: DndElementEvents, data?: T }) {
         this.id = id
         this.node = node
         this.draggable = options.draggable
@@ -25,6 +30,7 @@ export class DndElement<T = unknown> {
         this.movementDelta = { x: 0, y: 0 }
         this.initialPoint = { x: 0, y: 0 }
         this.isActive = false
+        this.isOver = false
         this.updateRect()
     }
 
@@ -32,7 +38,7 @@ export class DndElement<T = unknown> {
         this.rect = getElementRect(this.node)
     }
     /** Events  */
-    public onDragStart(ev: PointerEvent) {
+    public onDragStart(ev: DndPointerEvent) {
         this.initialPoint = { x: ev.pageX, y: ev.pageY }
         this.isActive = true
 
@@ -46,24 +52,19 @@ export class DndElement<T = unknown> {
         }
 
     }
-    public onDragEnd(ev: PointerEvent) {
-        this.movementDelta = { x: 0, y: 0 }
-
-        this.isActive = false
-        Context.getState().isDragging = false
-        console.log('stop active')
-
-        if (this.callbacks.onMove) {
-            todo('onMove')
+    public onDragEnd(ev: DndPointerEvent) {
+        console.log(' running dragend')
+        if (this.callbacks?.onDragEnd) {
+            this.callbacks.onDragEnd({ active: this })
         } else {
-            this.node.style.transform = `translate(${this.movementDelta.x}px, ${this.movementDelta.y}px)`
+            this.node.style.transform = `translate(0px, 0px)`
         }
     }
-    public onDragMove(ev: PointerEvent) {
+    public onDragMove(ev: DndPointerEvent) {
         this.movementDelta.x = -(this.initialPoint.x - ev.pageX)
         this.movementDelta.y = -(this.initialPoint.y - ev.pageY)
 
-        if (this.callbacks.onMove) {
+        if (this.callbacks?.onDragMove) {
             todo('onMove')
         } else {
             this.node.style.transform = `translate(${this.movementDelta.x}px, ${this.movementDelta.y}px)`
@@ -71,8 +72,42 @@ export class DndElement<T = unknown> {
 
     }
 
-    public move(screenPosition: Vec2) {
+    public onDrop(ev: DndPointerEvent) {
+        todo('onDrop - draggable')
     }
+    public onDragOverStart(ev: DndPointerEvent) {
+        const context = Context.getState()
+
+        context.overElement?.onDragOverLeave(ev)
+        context.overElement = this
+        context.overStack.push(this)
+        this.isOver = true
+
+        if (this.callbacks?.onDragOverStart) {
+            todo('onOver - droppable')
+        }
+    }
+    public onDragOverMove(ev: DndPointerEvent) {
+        todo('onOver - droppable')
+    }
+    public onDragOverLeave(ev: DndPointerEvent) {
+        const context = Context.getState()
+
+        this.isOver = false
+        context.overStack.pop()
+
+        if (context.overStack.length > 0) {
+            context.overElement = context.overStack[context.overStack.length - 1]
+        } else {
+            context.overElement = null
+        }
+
+    }
+    public onActive(ev: DndPointerEvent) {
+        todo('onActive - draggable')
+    }
+
+
 
 
 

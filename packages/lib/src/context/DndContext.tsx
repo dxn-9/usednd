@@ -1,7 +1,10 @@
 import React, { PropsWithChildren, cloneElement, createContext, useEffect, useMemo, useRef, useState } from "react"
 import { compareObjects, computeClosestDroppable } from '../utils'
-import { DndContext, DndEvent, ElementCallbacks, ElementRect, UniqueId } from "./ContextTypes"
-import { DndElement } from "../entities/DndElement"
+import { DndContext, UniqueId } from "./ContextTypes"
+import { DndElement, } from "../entities/DndElement"
+import { DndEvents } from "../options/DndEvents"
+import { DndCollision } from "../options/DndCollisions"
+import { flushSync } from "react-dom"
 
 
 
@@ -13,24 +16,30 @@ export const Context = createContext<DndContext>({ dndProviderProps: {} } as Dnd
 
 
 
-export interface DndProviderProps {
-	onDrop?: (ev: PointerEvent, active: DndElement, over: DndElement, context: DndContext) => any
+export interface DndProviderProps extends Partial<DndEvents> {
+	// onDrop?: (ev: PointerEvent, active: DndElement, over: DndElement, context: DndContext) => any
 	debug?: boolean
 	ghost?: () => JSX.Element
-	/** distance for mouse to element to trigger the over effect */
+	/** Distance for mouse in pixels to element to trigger the over effect  
+	*	Default value: 100 
+	*/
 	outsideThreshold?: number
+	/** 
+	 * 
+	*/
+	collisionDetection?: DndCollision
 }
 
 
 
+export const Provider: React.FC<PropsWithChildren<DndProviderProps>> = ({ collisionDetection = DndCollision.Inside, outsideThreshold = 100, children, debug, ghost, ...callbacks }) => {
 
-export const Provider = ({ children, outsideThreshold = 5, ...props }: PropsWithChildren<DndProviderProps>) => {
-
+	// current problem: if props change the context is not updated or recreated
 	const context = useMemo<DndContext>(() => ({
 		elements: new Map(),
 		isDragging: false,
 		isOutside: false,
-		dndProviderProps: { outsideThreshold, ...props },
+		dndProviderProps: { collisionDetection, outsideThreshold, debug, ghost, callbacks },
 		ghostNode: null,
 		overStack: [],
 		overElement: null,
@@ -52,6 +61,7 @@ export const Provider = ({ children, outsideThreshold = 5, ...props }: PropsWith
 	useEffect(() => {
 
 		function pointerUp(ev: PointerEvent) {
+			if (!context.isDragging) return
 
 			/** Get rid of ghost */
 			// if (ghostNode.current && isElement(ghostNode.current)) {
@@ -61,63 +71,65 @@ export const Provider = ({ children, outsideThreshold = 5, ...props }: PropsWith
 
 
 			if (context.activeElement && context.overElement) {
-				props?.onDrop?.(ev, context.activeElement, context.overElement, context)
+				context.overElement.onDrop?.(ev)
+				callbacks?.onDrop?.({ event: ev, active: context.activeElement, over: context.overElement, context })
 
 				// 	/** Cleanup */
 				context.activeElement.node.style.opacity = '1.0'
 			}
+			console.log('poinnter up', context.activeElement.movementDelta)
 
-			context.activeElement?.onDragEnd(ev);
-			context.activeElement = null;
-			// }
-			context.overStack = []
-			context.overElement?.callbacks?.onOutsideOverLeave?.({})
-			context.overElement = null
+			// this is extremely hacky but it does work without compromising ux xd
+			requestAnimationFrame(() => {
+				// prevent the screen from being repainted
+				callbacks.onDragEnd?.({ event: ev, active: context.activeElement, over: context.overElement, context })
+				context.activeElement?.onDragEnd(ev);
+
+				context.activeElement.movementDelta = { x: 0, y: 0 }
+				context.activeElement.isActive = false;
+				(context.isDragging as boolean) = false;
+				(context.activeElement as DndElement | null) = null;
+				context.overElement?.onDragOverLeave?.(ev);
+
+				setTimeout(() => {
+					/** Cleanup after the react state has been updated and no references are gcd */
+					console.log('cleanup')
+					context.overStack = []
+				}, 0)
+			})
 
 		}
 		function pointerMove(ev: PointerEvent) {
-			if (context.isDragging && context.isOutside) {
-				// 		// if its dragging and its not inside a droppable element
-				// 		const result = computeClosestDroppable(ev, context.elements, activeElement.current!)
-				// 		// console.log('PERFORMANCE:', performance.now() - g)
+			if (!context.isDragging) return
 
-				// 		if (result.closestDistance < outsideThreshold) {
-				// 			if (debug) {
-				// 				/** Update debug line if debug - just do it imperatively so it doesnt affect react performance */
-				// 				const line = document.querySelector('#dnd-debug-view') as SVGLineElement
-				// 				line.setAttribute('x1', ev.pageX.toString())
-				// 				line.setAttribute('x2', result.pointOfContact.x.toString())
-				// 				line.setAttribute('y1', ev.pageY.toString())
-				// 				line.setAttribute('y2', result.pointOfContact.y.toString())
-				// 			}
+			// if its dragging and its not inside a droppable element
 
+			if (collisionDetection === DndCollision.ClosestPoint) {
+				const result = computeClosestDroppable(ev, context.elements, context.activeElement)
+				if (result.closestDistance < outsideThreshold) {
+					if (debug) {
+						/** Update debug line if debug - just do it imperatively so it doesnt affect react performance */
+						const line = document.querySelector('#dnd-debug-view') as SVGLineElement
+						line.setAttribute('x1', ev.pageX.toString())
+						line.setAttribute('x2', result.pointOfContact.x.toString())
+						line.setAttribute('y1', ev.pageY.toString())
+						line.setAttribute('y2', result.pointOfContact.y.toString())
+					}
 
-				// 			if (result.closestElement !== overElement.current) {
-				// 				/** If it changed element fire the event and change state */
+				}
+				if (result.closestElement?.isOver) {
+					/** if its still over the same element, just fire the move */
+					result.closestElement.onDragOverMove(ev)
 
-				// 				overElement.current?.callbacks?.onOutsideOverLeave?.({})
-				// 				overStack.current[0] = result.closestElement as Element
-				// 				overElement.current = result.closestElement;
+				} else {
+					result.closestElement?.onDragOverStart(ev)
 
-				// 			}
-
-				// 			result.closestElement?.callbacks?.onOutsideOver?.({
-				// 				...ev, dnd: { active: activeElement.current!, over: result.closestElement, pointOfContact: [result.pointOfContact.x, result.pointOfContact.y] }
-				// 			})
-
-				// 		}
-
-				// 	}
-
-
-
+				}
 			}
 
-			if (context.isDragging && context.activeElement) {
 
-				context.activeElement.onDragMove(ev)
 
-			}
+			context.activeElement.onDragMove(ev)
 		}
 
 		window.addEventListener('pointermove', pointerMove)
@@ -144,7 +156,7 @@ export const Provider = ({ children, outsideThreshold = 5, ...props }: PropsWith
 
 
 	return <Context.Provider value={context}>
-		{props.debug && (<svg viewBox={`0 0 ${window.innerWidth} ${window.innerHeight}`} >
+		{debug && (<svg viewBox={`0 0 ${window.innerWidth} ${window.innerHeight}`} >
 			<line x1={0} y1={0} x2={0} y2={0} stroke='red' id="dnd-debug-view"></line>
 		</svg>)}
 		{children}</Context.Provider>

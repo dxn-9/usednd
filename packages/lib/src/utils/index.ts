@@ -1,17 +1,24 @@
 import React from "react";
-import { UniqueId, DndElement, DndElementRect, Vec2 } from "../context/ContextTypes"
+import { UniqueId, DndElementRect, Vec2 } from "../context/ContextTypes"
 import { DirectionType } from "../hooks/useDnd"
+import { DndElement } from "../entities/DndElement";
+import { DndEventOptions, DndPointerEvent } from "../options/DndEvents";
+import { Context } from "../context/DndContext";
 
 
 
-export function computeClosestDroppable(ev: React.PointerEvent, allElements: Map<UniqueId, DndElement>, active?: DndElement) {
+export function computeClosestCenter() {
+    todo("compute closest center")
+}
+
+export function computeClosestDroppable(ev: DndPointerEvent, allElements: Map<UniqueId, DndElement>, active: DndElement) {
     // max 32bit uint 
     let closestDistance = -1 >>> 1 // other cool way is ~0 >>> 1
     let closestElement: DndElement | null = null;
     const pointOfContact = { x: 0, y: 0 }
 
 
-    for (const [id, element] of allElements) {
+    for (const [, element] of allElements) {
         if (element.id === active?.id) continue // do not calculate the active 
         if (!element.droppable) continue
 
@@ -20,7 +27,7 @@ export function computeClosestDroppable(ev: React.PointerEvent, allElements: Map
 
 
         const distanceToCenter = Math.sqrt(pow2(ev.pageX - element.rect.center.x) + pow2(ev.pageY - element.rect.center.y))
-        const dragAngle = Math.asin((Math.abs(ev.pageY - element.rect.center.x) / distanceToCenter))
+        const dragAngle = Math.asin((Math.abs(ev.pageY - element.rect.center.y) / distanceToCenter))
 
         let dist = 0
         let x = 0;
@@ -132,10 +139,19 @@ export function pow2(num: number) {
 
 export function normalize(vec: [number, number]): Vec2 {
     const sum = Math.abs(vec[0]) + Math.abs(vec[1])
-    return [vec[0] / sum, vec[1] / sum]
+    return { x: vec[0] / sum, y: vec[1] / sum }
 }
+
+
+export function createEventOptions(ev: DndPointerEvent): DndEventOptions {
+    const ctx = Context.getState()
+    if (!ctx.activeElement) throw new Error('No active element')
+    todo('createEventOptions')
+    // distinct the target type based on the event  - if draggable event or droppable event
+    // return { context: ctx, active: ctx.activeElement, event: ev, over: ctx.overElement, }
+}
+
 
 export function todo(str: string) {
     console.log('TODO:', str)
 }
-

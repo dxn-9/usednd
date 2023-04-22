@@ -33,21 +33,21 @@ export interface Vec2 {
     y: number
 }
 
-export type DndContext = DndContextInt & { isDragging: true; activeElement: React.MutableRefObject<DndElement> } | DndContextInt
+export type DndContext = DndContextInt & ({ isDragging: true; activeElement: DndElement } | { isDragging: false; activeElement: null })
 
 
 
 
 export interface DndContextInt {
-    isDragging: boolean
+    // isDragging: boolean
     isOutside: boolean
     dndProviderProps: DndProviderProps
     elements: Map<UniqueId, DndElement>
     ghostNode: DndElement | null
-    activeElement: DndElement | null
+    // activeElement: DndElement | null
     overElement: DndElement | null
     overStack: DndElement[]
 
-    register: (id: UniqueId, node: HTMLElement, options: { draggable: boolean, droppable: boolean, data?: any, callbacks?: ElementCallbacks }) => DndElement
+    register: (id: UniqueId, node: HTMLElement, options: { draggable: boolean, droppable: boolean, data?: any, callbacks?: DndElementCallbacks }) => DndElement
     unregister: (id: UniqueId) => void
 }

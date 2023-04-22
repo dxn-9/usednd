@@ -1,16 +1,18 @@
 import React, { createElement, useContext, useEffect, useRef, useState } from 'react'
 import { Context } from '../context/DndContext'
-import { DndContext, DndContextX, Element, UniqueId, Vec2, } from '../context/ContextTypes'
+import { DndContext, UniqueId, Vec2, } from '../context/ContextTypes'
 import { compareObjects, computeDirection, getElementRect, normalize, todo } from '../utils'
 import { computeClosestDroppable } from '../utils'
 import { createPortal } from 'react-dom'
-import { onPointerDown, onPointerMove, onPointerOut, onPointerUp } from '../context/DragEvents'
+import { onPointerDown, } from '../context/DragEvents'
+import { DndElementEvents } from '../options/DndEvents'
 
 
 interface DndOptions {
     draggable: boolean
     droppable: boolean
     data?: any
+    callbacks?: Partial<DndElementEvents>
 }
 
 
@@ -57,7 +59,7 @@ interface DndElementState {
     active?: boolean
 }
 
-export const useDnd = (id: UniqueId, { draggable, droppable, data }: DndOptions = { draggable: true, droppable: true }) => {
+export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks }: DndOptions = { draggable: true, droppable: true }) => {
     const context = useContext(Context)
     const elemRef = useRef<Element | null>(null)
     const nodeRef = useRef<HTMLElement | null>(null)
@@ -66,6 +68,7 @@ export const useDnd = (id: UniqueId, { draggable, droppable, data }: DndOptions 
 
 
     const [over, setOver] = useState<OverType>({ isOver: false, direction: null }) // vector2 representing the direction of the cursor - have to make it an object to avoid impossible states
+    const [active, setActive] = useState(false)
     const setNode = (node: HTMLElement | null) => {
         nodeRef.current = node // this is to make ts happy 
     }
@@ -81,25 +84,8 @@ export const useDnd = (id: UniqueId, { draggable, droppable, data }: DndOptions 
                 data,
                 draggable,
                 droppable,
-                callbacks: {
-                    onOutsideOver: (ev) => {
-                        if (!elemRef.current) return
-                        console.log(ev.dnd.pointOfContact)
-                        setOver({
-                            isOver: true, direction: computeDirection(elemRef.current, ev.dnd.pointOfContact)
-                        })
-                    },
-                    onOutsideOverLeave: (ev) => {
-                        console.log('leave')
-                        if (!elemRef.current) return
-                        setOver({
-                            isOver: false, direction: null
-                        })
-                    },
-                    updateState: setState,
-                }
-
-            })
+                callbacks
+            });
 
             elemRef.current = elem
 
