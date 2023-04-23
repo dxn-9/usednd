@@ -1,4 +1,4 @@
-import { Provider, useDnd } from 'lib'
+import { DndProvider, useDnd } from 'lib'
 import React, { PropsWithChildren, useState } from 'react'
 
 
@@ -75,9 +75,9 @@ const Scenario2 = () => {
     const [folderState, setFolderState] = useState<Folder[]>(mockData)
 
     return <div className='flex w-screen items-center justify-center flex-col'>
-        <Provider>
+        <DndProvider>
             {folderState.map((folder) => <ParentFolder folder={folder} />)}
-        </Provider>
+        </DndProvider>
     </div>
 }
 

@@ -6,12 +6,69 @@ import { DndEventOptions, DndPointerEvent } from "../options/DndEvents";
 import { Context } from "../context/DndContext";
 
 
+type CollisionResult = false | CollisionResultSuccess
+interface CollisionResultSuccess {
+    pointOfContact?: Vec2
+    element: DndElement
+    distance: number
+}
+
+
+export function computeIntersectRect(ev: DndPointerEvent): CollisionResult {
+    const context = Context.getState()
+    const active = context.activeElement;
+    active?.updateRect()
+
+    if (!active) return false
+
+    let closestElement: DndElement | null = null
+    let closestDistance = 0
+
+    // topleft corner
+    const a_l: Vec2 = { x: active.rect.left, y: active.rect.top }
+    // bottomright corner
+    const a_r: Vec2 = { x: active.rect.right, y: active.rect.bottom }
+
+
+    for (const [, element] of context.elements) {
+        if (element.id === active.id || !element.droppable) continue
+
+        const b_l: Vec2 = { x: element.rect.left, y: element.rect.top }
+        const b_r: Vec2 = { x: element.rect.right, y: element.rect.bottom }
+
+        let areaInside = 0;
+        const bottom = Math.min(a_r.y, b_r.y)
+        const top = Math.max(a_l.y, b_l.y)
+
+        const right = Math.min(a_r.x, b_r.x)
+        const left = Math.max(a_l.x, b_l.x)
+
+
+        if (bottom > top && right > left) {
+            const height = bottom - top;
+            const width = right - left
+            areaInside = height * width
+            // y plane is inside
+        }
+
+        if (areaInside > closestDistance) {
+            closestDistance = areaInside
+            closestElement = element
+        }
+
+
+    }
+    if (!closestElement) return false
+
+    return { element: closestElement, distance: closestDistance }
+
+}
 
 export function computeClosestCenter() {
     todo("compute closest center")
 }
 
-export function computeClosestDroppable(ev: DndPointerEvent, allElements: Map<UniqueId, DndElement>, active: DndElement) {
+export function computeClosestDroppable(ev: DndPointerEvent, allElements: Map<UniqueId, DndElement>, active: DndElement): CollisionResult {
     // max 32bit uint 
     let closestDistance = -1 >>> 1 // other cool way is ~0 >>> 1
     let closestElement: DndElement | null = null;
@@ -59,10 +116,11 @@ export function computeClosestDroppable(ev: DndPointerEvent, allElements: Map<Un
 
     }
 
-
-
+    if (closestElement === null) return false
     return {
-        closestDistance, closestElement, pointOfContact
+        element: closestElement,
+        distance: closestDistance,
+        pointOfContact
     }
 
 }
@@ -76,7 +134,24 @@ export function getElementRect(node: HTMLElement): DndElementRect {
     const angle = Math.asin(geometry.height / Math.sqrt(pow2(geometry.width) + pow2(geometry.height)))
 
 
-    return { center, height: geometry.height, left: geometry.left, top: geometry.top, width: geometry.width, angle }
+    return {
+        center,
+        height: geometry.height,
+        left: geometry.left,
+        right: geometry.right,
+        bottom: geometry.bottom,
+        top: geometry.top,
+        width: geometry.width,
+        angle
+    }
+}
+
+export function createContextSnapshot(ev: DndPointerEvent): DndEventOptions {
+    const context = Context.getState()
+
+
+
+    // return {}
 }
 
 

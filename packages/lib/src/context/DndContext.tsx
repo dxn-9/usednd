@@ -1,5 +1,5 @@
-import React, { PropsWithChildren, cloneElement, createContext, useEffect, useMemo, useRef, useState } from "react"
-import { compareObjects, computeClosestDroppable } from '../utils'
+import React, { PropsWithChildren, cloneElement, createContext, startTransition, useEffect, useMemo, useRef, useState } from "react"
+import { compareObjects, computeClosestDroppable, computeIntersectRect } from '../utils'
 import { DndContext, UniqueId } from "./ContextTypes"
 import { DndElement, } from "../entities/DndElement"
 import { DndEvents } from "../options/DndEvents"
@@ -32,11 +32,12 @@ export interface DndProviderProps extends Partial<DndEvents> {
 
 
 
-export const Provider: React.FC<PropsWithChildren<DndProviderProps>> = ({ collisionDetection = DndCollision.Inside, outsideThreshold = 100, children, debug, ghost, ...callbacks }) => {
+export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({ collisionDetection = DndCollision.RectIntersect, outsideThreshold = 100, children, debug, ghost, ...callbacks }) => {
 
 	// current problem: if props change the context is not updated or recreated
 	const context = useMemo<DndContext>(() => ({
 		elements: new Map(),
+		cleanupFunctions: [],
 		isDragging: false,
 		isOutside: false,
 		dndProviderProps: { collisionDetection, outsideThreshold, debug, ghost, callbacks },
@@ -77,30 +78,32 @@ export const Provider: React.FC<PropsWithChildren<DndProviderProps>> = ({ collis
 				// 	/** Cleanup */
 				context.activeElement.node.style.opacity = '1.0'
 			}
-			console.log('poinnter up', context.activeElement.movementDelta)
 
 			// this is extremely hacky but it does work without compromising ux xd
-			requestAnimationFrame(() => {
-				// prevent the screen from being repainted
-				callbacks.onDragEnd?.({ event: ev, active: context.activeElement, over: context.overElement, context })
-				context.activeElement?.onDragEnd(ev);
+			// prevent the screen from being repainted
 
+
+
+
+			callbacks.onDragEnd?.({ context, active: context.activeElement, over: context.overElement })
+			context.overElement?.onDragOverLeave?.(ev);
+			context.activeElement?.onDragEnd(ev);
+
+			/** Cleanup after the react state has been updated  */
+			console.log('pushing cleanup')
+			context.cleanupFunctions.push(() => {
+				console.log('CLEANUP!!')
 				context.activeElement.movementDelta = { x: 0, y: 0 }
 				context.activeElement.isActive = false;
+				context.overStack = [];
 				(context.isDragging as boolean) = false;
 				(context.activeElement as DndElement | null) = null;
-				context.overElement?.onDragOverLeave?.(ev);
-
-				setTimeout(() => {
-					/** Cleanup after the react state has been updated and no references are gcd */
-					console.log('cleanup')
-					context.overStack = []
-				}, 0)
 			})
 
 		}
 		function pointerMove(ev: PointerEvent) {
 			if (!context.isDragging) return
+			console.log('is dragging')
 
 			// if its dragging and its not inside a droppable element
 
@@ -124,6 +127,18 @@ export const Provider: React.FC<PropsWithChildren<DndProviderProps>> = ({ collis
 				} else {
 					result.closestElement?.onDragOverStart(ev)
 
+				}
+			}
+			if (collisionDetection === DndCollision.RectIntersect) {
+				const result = computeIntersectRect(ev)
+
+				if (!result) {
+					context.overElement?.onDragOverLeave?.(ev)
+					context.overElement = null
+					context.overStack = []
+
+				} else {
+					result.element.onDragOverStart(ev)
 				}
 			}
 
@@ -161,6 +176,6 @@ export const Provider: React.FC<PropsWithChildren<DndProviderProps>> = ({ collis
 		</svg>)}
 		{children}</Context.Provider>
 }
-export default Provider
+export default DndProvider
 
 

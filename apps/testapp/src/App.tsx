@@ -4,12 +4,13 @@ import Scenario1 from './scenarios/1'
 import './App.css'
 import Scenario2 from './scenarios/2'
 import Scenario3 from './scenarios/3'
+import Scenario4 from './scenarios/4'
 
-const availableScenarios = [<Scenario1 />, <Scenario2 />, <Scenario3 />]
+const availableScenarios = [<Scenario1 />, <Scenario2 />, <Scenario3 />, <Scenario4 />]
 
 function App() {
 
-	const [currentScenario, setCurrentScenario] = useState(2)
+	const [currentScenario, setCurrentScenario] = useState(3)
 
 	return (
 		<main>

@@ -1,4 +1,4 @@
-import { Provider, useDnd } from 'lib'
+import { DndProvider, useDnd } from 'lib'
 import { DndCollision } from 'lib/src/options/DndCollisions'
 import React, { useMemo, useRef, useState } from 'react'
 
@@ -10,7 +10,7 @@ const Scenario1 = () => {
 
 
     console.log(droppedMap)
-    return <Provider debug={true} outsideThreshold={10000} collisionDetection={DndCollision.ClosestPoint} onDrop={(options) => {
+    return <DndProvider debug={true} outsideThreshold={10000} collisionDetection={DndCollision.ClosestPoint} onDrop={(options) => {
         options.over.id
         setDroppedMap((prev) => ({ ...prev, [options.over.id]: prev[options.over.id as keyof typeof prev] as number + 1 }))
 
@@ -21,7 +21,7 @@ const Scenario1 = () => {
                 {Object.keys(droppedMap).map((_, i) => <Droppable key={i} style={{ left: (Math.random() - 0.5) * 800, top: (Math.random() - 0.5) * 800 }} idKey={i} droppedCount={droppedMap[i]} />)}
             </div>
         </div>
-    </Provider>
+    </DndProvider>
 
 }
 
@@ -33,7 +33,7 @@ const Draggable = () => {
 }
 
 const Droppable = ({ idKey, droppedCount, ...props }: React.HTMLAttributes<HTMLDivElement> & { idKey: number; droppedCount?: number }) => {
-    const { setNode, listeners, over } = useDnd(idKey)
+    const { setNode, listeners, over, state } = useDnd(idKey)
     const randomWidth = useRef(Math.random())
 
     let overStyle = ''
@@ -51,7 +51,7 @@ const Droppable = ({ idKey, droppedCount, ...props }: React.HTMLAttributes<HTMLD
 
 
 
-    return <div ref={setNode} {...listeners} className={`bg-red-600/5 w-${randomWidth.current > 0.5 ? '24' : '48'} h-24 absolute -translate-x-1/2 -translate-y-1/2 ${overStyle}`} {...props}>Droppable - {idKey} - Dropped: {droppedCount}</div>
+    return <div ref={setNode} {...listeners} className={`bg-red-600/5 ${state.over && 'bg-white'} w-${randomWidth.current > 0.5 ? '24' : '48'} h-24 absolute -translate-x-1/2 -translate-y-1/2 ${overStyle}`} {...props}>Droppable - {idKey} - Dropped: {droppedCount}</div>
 }
 
 export default Scenario1

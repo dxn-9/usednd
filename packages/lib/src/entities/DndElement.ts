@@ -47,17 +47,15 @@ export class DndElement<T = unknown>  {
         ctx.isDragging = true
         ctx.isOutside = true
 
-        if (this.callbacks?.onActive) {
-            todo('onActive')
+        if (this.callbacks?.onDragStart) {
+            this.callbacks.onDragStart({ active: this, over: null, event: ev })
         }
 
     }
     public onDragEnd(ev: DndPointerEvent) {
-        console.log(' running dragend')
+
         if (this.callbacks?.onDragEnd) {
             this.callbacks.onDragEnd({ active: this })
-        } else {
-            this.node.style.transform = `translate(0px, 0px)`
         }
     }
     public onDragMove(ev: DndPointerEvent) {
@@ -65,11 +63,8 @@ export class DndElement<T = unknown>  {
         this.movementDelta.y = -(this.initialPoint.y - ev.pageY)
 
         if (this.callbacks?.onDragMove) {
-            todo('onMove')
-        } else {
-            this.node.style.transform = `translate(${this.movementDelta.x}px, ${this.movementDelta.y}px)`
+            this.callbacks.onDragMove({ active: this })
         }
-
     }
 
     public onDrop(ev: DndPointerEvent) {
@@ -84,7 +79,7 @@ export class DndElement<T = unknown>  {
         this.isOver = true
 
         if (this.callbacks?.onDragOverStart) {
-            todo('onOver - droppable')
+            this.callbacks.onDragOverStart({ active: this })
         }
     }
     public onDragOverMove(ev: DndPointerEvent) {
@@ -100,6 +95,10 @@ export class DndElement<T = unknown>  {
             context.overElement = context.overStack[context.overStack.length - 1]
         } else {
             context.overElement = null
+        }
+
+        if (this.callbacks?.onDragOverEnd) {
+            this.callbacks.onDragOverEnd({ active: this })
         }
 
     }

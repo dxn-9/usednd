@@ -1,5 +1,5 @@
 export enum DndCollision {
-    Inside = 'rect',
+    RectIntersect = 'rect',
     ClosestCenter = 'closestCenter',
     ClosestPoint = 'closestPoint'
 

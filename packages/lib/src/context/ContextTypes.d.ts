@@ -17,6 +17,8 @@ export interface DndElementRect {
     angle: number
     left: number
     top: number
+    right: number
+    bottom: number
     width: number
     height: number
     center: Vec2
@@ -44,6 +46,7 @@ export interface DndContextInt {
     dndProviderProps: DndProviderProps
     elements: Map<UniqueId, DndElement>
     ghostNode: DndElement | null
+    cleanupFunctions: (() => void)[]
     // activeElement: DndElement | null
     overElement: DndElement | null
     overStack: DndElement[]
