@@ -3,6 +3,7 @@ import { DndElementRect, UniqueId, Vec2 } from "../context/ContextTypes";
 import { getElementRect, pow2, todo } from "../utils";
 import { Context } from "../context/DndContext";
 import { DndElementEvents, DndPointerEvent } from "../options/DndEvents";
+import { Transform } from "../hooks/useDnd";
 
 
 
@@ -17,6 +18,7 @@ export class DndElement<T = unknown>  {
     initialPoint: Vec2
     isActive: boolean
     isOver: boolean
+    transform: Transform
     callbacks?: DndElementEvents
     data?: T
 
@@ -32,6 +34,7 @@ export class DndElement<T = unknown>  {
         this.isActive = false
         this.isOver = false
         this.updateRect()
+        this.transform = { x: 0, y: 0, scale: 1 }
     }
 
     public updateRect() {
@@ -68,7 +71,7 @@ export class DndElement<T = unknown>  {
     }
 
     public onDrop(ev: DndPointerEvent) {
-        todo('onDrop - draggable')
+        console.log('on DROP CALLED')
     }
     public onDragOverStart(ev: DndPointerEvent) {
         const context = Context.getState()

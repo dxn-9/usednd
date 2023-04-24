@@ -1,13 +1,14 @@
-import React, { createElement, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { createElement, startTransition, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Context } from '../context/DndContext'
 import { DndContext, UniqueId, Vec2, } from '../context/ContextTypes'
-import { compareObjects, computeDirection, getElementRect, normalize, todo } from '../utils'
+import { compareObjects, computeDirection, getElementRect, lerpValue, normalize, todo } from '../utils'
 import { computeClosestDroppable } from '../utils'
 import { createPortal } from 'react-dom'
 import { onPointerDown, } from '../context/DragEvents'
 import { DndElementEvents } from '../options/DndEvents'
 import { DndElement } from '../entities/DndElement'
 import { onPointerEnter, onPointerLeave, onPointerMove } from '../context/DropEvents'
+import { useSpring, useSpringValue } from '@react-spring/web'
 
 
 interface DndOptions {
@@ -42,7 +43,7 @@ type OverType = {
 
 
 function getSyntethicListeners(id: UniqueId, options: DndOptions) {
-    console.log('id ', id)
+    // console.log('id ', id)
     const events = {} as Record<string, (ev: React.PointerEvent) => void>
     if (options.draggable) {
         events.onPointerDown = (ev: React.PointerEvent) => onPointerDown(ev, id)
@@ -51,11 +52,16 @@ function getSyntethicListeners(id: UniqueId, options: DndOptions) {
     return events
 }
 
-interface DndElementState {
-    transform: { x: number, y: number }
+export interface DndElementState {
+    // transform: { x: number, y: number }
     over?: boolean
     active?: boolean
-    direction?: DirectionType
+    // direction?: DirectionType
+}
+export interface Transform {
+    x: number
+    y: number
+    scale: number
 }
 
 export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks }: DndOptions = { draggable: true, droppable: true }) => {
@@ -63,7 +69,11 @@ export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks }: 
     const elemRef = useRef<DndElement | null>(null)
     const nodeRef = useRef<HTMLElement | null>(null)
     const listeners = getSyntethicListeners(id, { draggable, droppable })
-    const [state, setState] = useState<DndElementState>({ transform: { x: 0, y: 0 } })
+    const [state, setState] = useState<DndElementState>({})
+    const [transform, setTransform] = useState<Transform>(context.elements.get(id)?.transform ?? { x: 0, y: 0, scale: 1 })
+
+
+
 
 
     const [over, setOver] = useState<OverType>({ isOver: false, direction: null }) // vector2 representing the direction of the cursor - have to make it an object to avoid impossible states
@@ -71,20 +81,34 @@ export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks }: 
     const setNode = (node: HTMLElement | null) => {
         nodeRef.current = node // this is to make ts happy 
     }
+    console.log('TRANSFORM', id, transform)
 
     const cbs: Partial<DndElementEvents> = useMemo(() => ({
         onDragStart: (o) => {
             o.active.node.style.zIndex = '1000'
-            setState((prev) => ({ ...prev, active: true }))
+            startTransition(() => {
+                setState((prev) => ({ ...prev, active: true }))
+                setTransform(() => ({ x: 0, y: 0, scale: 1 }))
+                lerpValue(1, 1.2, 100, (v) => {
+                    console.log('lerped value', v)
+                    setTransform((prev) => ({ x: prev.x, y: prev.y, scale: v }))
+                })
+                // setTransform({ x: 0, y: 0, scale: 1.2 })
+            })
         },
         onDragEnd: ((o) => {
             o.active.node.style.zIndex = '0'
-            o.active.node.style.transform = 'translate(0px, 0px)'
 
-            setState((prev) => ({ ...prev, active: false }))
+            startTransition(() => {
+                setState((prev) => ({ ...prev, active: false }))
+                setTransform({ x: 0, y: 0, scale: 1 })
+
+
+            })
         }),
         onDragMove: ((o) => {
-            o.active.node.style.transform = `translate(${o.active.movementDelta.x}px, ${o.active.movementDelta.y}px)`
+            setTransform((prev) => ({ x: o.active.movementDelta.x, y: o.active.movementDelta.y, scale: prev.scale }))
+            // o.active.node.style.transform = `translate(${o.active.movementDelta.x}px, ${o.active.movementDelta.y}px)`
         }),
         onDragOverEnd: ((o) => {
             console.log('drag over end')
@@ -136,6 +160,7 @@ export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks }: 
                 // recompute the element box
                 // console.log('recalculating')
                 // contextElem.rect = getElementRect(nodeRef.current)
+                console.log('updating rect')
                 elemRef.current?.updateRect()
             }
 
@@ -152,7 +177,8 @@ export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks }: 
             fn?.()
         }
     })
-    return { setNode, listeners, over, state }
+
+    return { setNode, listeners, over, state, transform }
 
 }
 

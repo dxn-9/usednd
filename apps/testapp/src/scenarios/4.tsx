@@ -17,13 +17,14 @@ const Scenario4 = () => {
 }
 function Draggable() {
     const { setNode, listeners, state } = useDnd(`draggable`, { draggable: true, droppable: false })
-    return <div ref={setNode} className='bg-slate-600 rounded-md h-12 relative' {...listeners} style={{ left: 265, top: -141 }}>Draggable</div>
+    return <div ref={setNode} className='bg-slate-600 rounded-md h-12 relative' {...listeners} >Draggable</div>
 }
 
 function Droppable({ id: number, children }: PropsWithChildren<{ id: number }>) {
     const { setNode, listeners, state } = useDnd(`droppable-${number}`, { draggable: false, droppable: true })
-    return <div ref={setNode} {...listeners} className={`bg-gray-500 border-2 relative border-black w-52 h-52 ${state.over && 'border-red-500'} `}>Droppable
+    return <div ref={setNode} {...listeners} className={`bg-gradient-to-r from-indigo-600 to-red-600 rotate-45  border-2 relative border-black w-52 h-52 ${state.over && 'border-red-500'} `}>Droppable
         {children}
     </div>
 }
+
 export default Scenario4

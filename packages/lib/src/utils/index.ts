@@ -1,6 +1,6 @@
 import React from "react";
 import { UniqueId, DndElementRect, Vec2 } from "../context/ContextTypes"
-import { DirectionType } from "../hooks/useDnd"
+import { DirectionType, Transform } from "../hooks/useDnd"
 import { DndElement } from "../entities/DndElement";
 import { DndEventOptions, DndPointerEvent } from "../options/DndEvents";
 import { Context } from "../context/DndContext";
@@ -107,7 +107,6 @@ export function computeClosestDroppable(ev: DndPointerEvent, allElements: Map<Un
         const distance = distanceToCenter - dist;
 
         if (distance < closestDistance) {
-            console.log('xy', x, y, element.id)
             pointOfContact.x = element.rect.center.x + (ev.pageX > element.rect.center.x ? x : -x)
             pointOfContact.y = element.rect.center.y + (ev.pageY > element.rect.center.y ? y : -y)
             closestDistance = distance;
@@ -153,6 +152,7 @@ export function createContextSnapshot(ev: DndPointerEvent): DndEventOptions {
 
     // return {}
 }
+
 
 
 
@@ -229,4 +229,38 @@ export function createEventOptions(ev: DndPointerEvent): DndEventOptions {
 
 export function todo(str: string) {
     console.log('TODO:', str)
+}
+
+export function clearOverStack(ev: DndPointerEvent) {
+    const ctx = Context.getState()
+    const over = ctx.overStack.pop()
+    if (over) {
+        over.onDragOverLeave?.(ev)
+    }
+}
+
+
+export function CSSTransform(transform: Transform): string {
+    return `translate3d(${transform.x}px, ${transform.y}px, 0) scale(${transform.scale})`
+}
+
+export function lerpValue(a: number, b: number, time: number, updater: (val: number) => void) {
+    const initialTime = Date.now()
+
+    const interval = setInterval(() => {
+        console.log('running interval')
+        const currentTime = Date.now()
+        const delta = currentTime - initialTime
+        const progress = Math.min(1, delta / time)
+        const val = a + ((b - a) * progress)
+        if (progress >= 1) {
+            updater(val)
+            clearInterval(interval)
+            return
+        }
+        updater(val)
+
+    }, 1000 / 60)
+
+
 }

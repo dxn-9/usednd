@@ -1,10 +1,11 @@
 import React, { PropsWithChildren, cloneElement, createContext, startTransition, useEffect, useMemo, useRef, useState } from "react"
-import { compareObjects, computeClosestDroppable, computeIntersectRect } from '../utils'
+import { clearOverStack, compareObjects, computeClosestDroppable, computeIntersectRect } from '../utils'
 import { DndContext, UniqueId } from "./ContextTypes"
 import { DndElement, } from "../entities/DndElement"
 import { DndEvents } from "../options/DndEvents"
 import { DndCollision } from "../options/DndCollisions"
 import { flushSync } from "react-dom"
+import { Transform } from "../hooks/useDnd"
 
 
 
@@ -52,9 +53,12 @@ export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({ col
 			node.style.touchAction = 'manipulation'
 			node.style.userSelect = 'none'
 			return element;
+
 		},
 		unregister: (id) => {
+			// dont delete it
 			context.elements?.delete(id)
+			// context.cleanupFunctions.push(() => context.elements.delete(id))
 		}
 
 	}), []);
@@ -71,6 +75,7 @@ export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({ col
 			// }
 
 
+
 			if (context.activeElement && context.overElement) {
 				context.overElement.onDrop?.(ev)
 				callbacks?.onDrop?.({ event: ev, active: context.activeElement, over: context.overElement, context })
@@ -85,60 +90,74 @@ export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({ col
 
 
 
-			callbacks.onDragEnd?.({ context, active: context.activeElement, over: context.overElement })
-			context.overElement?.onDragOverLeave?.(ev);
-			context.activeElement?.onDragEnd(ev);
+			startTransition(() => {
+				callbacks.onDragEnd?.({ context, active: context.activeElement, over: context.overElement })
+				context.overElement?.onDragOverLeave?.(ev);
+				context.activeElement?.onDragEnd(ev);
+			})
 
 			/** Cleanup after the react state has been updated  */
-			console.log('pushing cleanup')
-			context.cleanupFunctions.push(() => {
-				console.log('CLEANUP!!')
-				context.activeElement.movementDelta = { x: 0, y: 0 }
-				context.activeElement.isActive = false;
-				context.overStack = [];
-				(context.isDragging as boolean) = false;
-				(context.activeElement as DndElement | null) = null;
-			})
+			// console.log('pushing cleanup')
+			// context.cleanupFunctions.push(() => {
+			// console.log('CLEANUP!!')
+			context.activeElement.movementDelta = { x: 0, y: 0 }
+			context.activeElement.isActive = false;
+			context.overStack = [];
+			(context.isDragging as boolean) = false;
+			(context.activeElement as DndElement | null) = null;
+			// })
 
 		}
 		function pointerMove(ev: PointerEvent) {
 			if (!context.isDragging) return
-			console.log('is dragging')
+			// console.log('is dragging')
 
 			// if its dragging and its not inside a droppable element
 
 			if (collisionDetection === DndCollision.ClosestPoint) {
 				const result = computeClosestDroppable(ev, context.elements, context.activeElement)
-				if (result.closestDistance < outsideThreshold) {
-					if (debug) {
-						/** Update debug line if debug - just do it imperatively so it doesnt affect react performance */
-						const line = document.querySelector('#dnd-debug-view') as SVGLineElement
-						line.setAttribute('x1', ev.pageX.toString())
-						line.setAttribute('x2', result.pointOfContact.x.toString())
-						line.setAttribute('y1', ev.pageY.toString())
-						line.setAttribute('y2', result.pointOfContact.y.toString())
+				if (!result || result.distance > outsideThreshold) {
+					while (context.overStack.length > 0) {
+						clearOverStack(ev)
 					}
+					return
 
 				}
-				if (result.closestElement?.isOver) {
+
+				if (debug) {
+					/** Update debug line if debug - just do it imperatively so it doesnt affect react performance */
+					const line = document.querySelector('#dnd-debug-view') as SVGLineElement
+					line.setAttribute('x1', ev.pageX.toString())
+					line.setAttribute('x2', result.pointOfContact?.x.toString())
+					line.setAttribute('y1', ev.pageY.toString())
+					line.setAttribute('y2', result.pointOfContact?.y.toString())
+				}
+
+				if (result.element.isOver) {
 					/** if its still over the same element, just fire the move */
-					result.closestElement.onDragOverMove(ev)
+					result.element.onDragOverMove(ev)
 
 				} else {
-					result.closestElement?.onDragOverStart(ev)
+					result.element?.onDragOverStart(ev)
 
 				}
 			}
+
 			if (collisionDetection === DndCollision.RectIntersect) {
 				const result = computeIntersectRect(ev)
 
 				if (!result) {
-					context.overElement?.onDragOverLeave?.(ev)
-					context.overElement = null
-					context.overStack = []
+					while (context.overStack.length > 0) {
+						clearOverStack(ev)
+					}
 
 				} else {
-					result.element.onDragOverStart(ev)
+					if (result.element.isOver) {
+						result.element.onDragOverMove(ev)
+
+					} else {
+						result.element.onDragOverStart(ev)
+					}
 				}
 			}
 
