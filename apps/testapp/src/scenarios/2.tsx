@@ -1,4 +1,6 @@
 import { DndProvider, useDnd } from 'lib'
+import { DndCollision } from 'lib/src/options/DndCollisions'
+import { CSSTransform } from 'lib/src/utils'
 import React, { PropsWithChildren, useState } from 'react'
 
 
@@ -75,7 +77,7 @@ const Scenario2 = () => {
     const [folderState, setFolderState] = useState<Folder[]>(mockData)
 
     return <div className='flex w-screen items-center justify-center flex-col'>
-        <DndProvider>
+        <DndProvider collisionDetection={DndCollision.ClosestPoint}>
             {folderState.map((folder) => <ParentFolder folder={folder} />)}
         </DndProvider>
     </div>
@@ -84,13 +86,11 @@ const Scenario2 = () => {
 
 
 const ParentFolder = ({ children, folder }: PropsWithChildren<{ folder: Folder }>) => {
-    const { setNode, events } = useDnd(`folder-${folder.id}`)
+    const { setNode, listeners, transform, state } = useDnd(`folder-${folder.id}`)
 
-    return <div className='w-64 bg-orange-400 border border-black p-1' ref={setNode} {...events}>
+    return <div className='w-64 bg-orange-400  flex flex-col border border-black p-1' ref={setNode} {...listeners} style={{ transform: CSSTransform(transform), background: state.over ? 'red' : '' }}>
         <p>{folder.name} - {folder.id}</p>
-        <div className='flex flex-col gap-2' >
-            {folder.subfolders?.map((subfolder) => <Subfolder folder={subfolder} />)}
-        </div>
+        {folder.subfolders?.map((subfolder) => <Subfolder folder={subfolder} />)}
     </div>
 
 }
@@ -98,7 +98,14 @@ const ParentFolder = ({ children, folder }: PropsWithChildren<{ folder: Folder }
 
 const Subfolder = ({ children, folder }: PropsWithChildren<{ folder: Folder }>) => {
 
-    return <div className='w-full h-8 bg-blue-400 border border-slate-500'>
+    const { state, setNode, listeners, transform } = useDnd(`subfolder-${folder.id}`, {
+        draggable: true, droppable: true, callbacks: {
+            onDragStart: (op) => {
+                // op.active.node.parentElement!.style.zIndex = '9999'
+            }
+        }
+    })
+    return <div className='w-full h-8 bg-blue-400 flex flex-col relative border border-slate-500' ref={setNode} {...listeners} style={{ transform: CSSTransform(transform), background: state.over ? 'green' : '' }}>
         <p> SUB : {folder.name} - {folder.id} </p>
     </div>
 }

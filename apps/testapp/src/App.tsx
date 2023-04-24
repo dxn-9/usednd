@@ -10,7 +10,7 @@ const availableScenarios = [<Scenario1 />, <Scenario2 />, <Scenario3 />, <Scenar
 
 function App() {
 
-	const [currentScenario, setCurrentScenario] = useState(3)
+	const [currentScenario, setCurrentScenario] = useState(1)
 
 	return (
 		<main>

@@ -61,6 +61,7 @@ export interface DndElementState {
 export interface Transform {
     x: number
     y: number
+    z: number
     scale: number
 }
 
@@ -70,7 +71,7 @@ export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks }: 
     const nodeRef = useRef<HTMLElement | null>(null)
     const listeners = getSyntethicListeners(id, { draggable, droppable })
     const [state, setState] = useState<DndElementState>({})
-    const [transform, setTransform] = useState<Transform>(context.elements.get(id)?.transform ?? { x: 0, y: 0, scale: 1 })
+    const [transform, setTransform] = useState<Transform>(context.elements.get(id)?.transform ?? { x: 0, y: 0, z: 0, scale: 1 })
 
 
 
@@ -85,43 +86,41 @@ export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks }: 
 
     const cbs: Partial<DndElementEvents> = useMemo(() => ({
         onDragStart: (o) => {
-            o.active.node.style.zIndex = '1000'
+            nodeRef.current!.style.zIndex = '9999'
+
             startTransition(() => {
                 setState((prev) => ({ ...prev, active: true }))
-                setTransform(() => ({ x: 0, y: 0, scale: 1 }))
-                lerpValue(1, 1.2, 100, (v) => {
-                    console.log('lerped value', v)
-                    setTransform((prev) => ({ x: prev.x, y: prev.y, scale: v }))
-                })
-                // setTransform({ x: 0, y: 0, scale: 1.2 })
+                setTransform(() => ({ x: 0, y: 0, z: 999, scale: 1 }))
             })
+            callbacks?.onDragStart?.(o)
         },
         onDragEnd: ((o) => {
-            o.active.node.style.zIndex = '0'
 
+            nodeRef.current!.style.zIndex = '0'
             startTransition(() => {
                 setState((prev) => ({ ...prev, active: false }))
-                setTransform({ x: 0, y: 0, scale: 1 })
+                setTransform({ x: 0, y: 0, z: 0, scale: 1 })
 
 
             })
+
+            callbacks?.onDragEnd?.(o)
         }),
         onDragMove: ((o) => {
-            setTransform((prev) => ({ x: o.active.movementDelta.x, y: o.active.movementDelta.y, scale: prev.scale }))
-            // o.active.node.style.transform = `translate(${o.active.movementDelta.x}px, ${o.active.movementDelta.y}px)`
+            setTransform((prev) => ({ x: o.active.movementDelta.x, y: o.active.movementDelta.y, z: 999, scale: prev.scale }))
         }),
         onDragOverEnd: ((o) => {
-            console.log('drag over end')
+
             setState((prev) => ({ ...prev, over: false }))
         }),
         onDragOverStart: ((o) => {
-            console.log('drag over end')
+
             setState((prev) => ({ ...prev, over: true }))
         }),
 
 
 
-        ...callbacks
+        // ...callbacks
         // onDragMove: (o) => {
         //     setState((prev) => ({ ...prev, active: true, transform: o.active.movementDelta }))
         // },

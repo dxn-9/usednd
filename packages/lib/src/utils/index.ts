@@ -241,7 +241,8 @@ export function clearOverStack(ev: DndPointerEvent) {
 
 
 export function CSSTransform(transform: Transform): string {
-    return `translate3d(${transform.x}px, ${transform.y}px, 0) scale(${transform.scale})`
+    if (!transform.x && !transform.y && !transform.z && transform.scale === 1) return 'unset'
+    return `translate3d(${transform.x}px, ${transform.y}px, ${transform.z}px) scale(${transform.scale})`
 }
 
 export function lerpValue(a: number, b: number, time: number, updater: (val: number) => void) {

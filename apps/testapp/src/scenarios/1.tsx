@@ -1,5 +1,6 @@
 import { DndProvider, useDnd } from 'lib'
 import { DndCollision } from 'lib/src/options/DndCollisions'
+import { CSSTransform } from 'lib/src/utils'
 import React, { useMemo, useRef, useState } from 'react'
 
 const Scenario1 = () => {
@@ -27,9 +28,9 @@ const Scenario1 = () => {
 
 const Draggable = () => {
 
-    const { setNode, listeners } = useDnd('drag')
+    const { setNode, listeners, transform } = useDnd('drag')
 
-    return <div ref={setNode} className='w-10 h-10 bg-yellow-300/10 absolute left-1/2 top-1/2 z-10' {...listeners}>Drag</div>
+    return <div ref={setNode} className='w-10 h-10 bg-yellow-300/10 absolute left-1/2 top-1/2 z-10' {...listeners} style={{ transform: CSSTransform(transform) }}>Drag</div>
 }
 
 const Droppable = ({ idKey, droppedCount, ...props }: React.HTMLAttributes<HTMLDivElement> & { idKey: number; droppedCount?: number }) => {

@@ -1,4 +1,5 @@
 import { DndProvider, useDnd } from 'lib'
+import { CSSTransform } from 'lib/src/utils'
 import React, { useState } from 'react'
 import { flushSync } from 'react-dom'
 const Scenario3 = () => {
@@ -27,11 +28,11 @@ const Scenario3 = () => {
 function SimpleDraggable({ position }: { position: { x: number, y: number } }) {
 
 
-    const { setNode, listeners, state } = useDnd(1, {
+    const { setNode, listeners, state, transform } = useDnd(1, {
         draggable: true, droppable: false
     })
-    console.log('DRAGGABLE RENDER', position, state.transform)
-    return <div className={`w-28 h-12 rounded bg-slate-900 text-center relative ${state.active && 'bg-red-500'}`} style={{ top: position.y, left: position.x, transform: `translate(${state.transform.x}px, ${state.transform.y}px)` }} ref={setNode} {...listeners}>Draggable</div>
+    // console.log('DRAGGABLE RENDER', position, state.transform)
+    return <div className={`w-28 h-12 rounded bg-slate-900 text-center relative ${state.active && 'bg-red-500'}`} style={{ top: position.y, left: position.x, transform: CSSTransform(transform) }} ref={setNode} {...listeners}>Draggable</div>
 }
 
 export default Scenario3
