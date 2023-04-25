@@ -1,18 +1,98 @@
 import React from "react";
-import { UniqueId, DndElementRect, Vec2 } from "../context/ContextTypes"
+import { UniqueId, DndElementRect } from "../context/ContextTypes"
 import { DirectionType, Transform } from "../hooks/useDnd"
 import { DndElement } from "../entities/DndElement";
 import { DndEventOptions, DndPointerEvent } from "../options/DndEvents";
 import { Context } from "../context/DndContext";
+import { Vec2 } from "../entities/Vec2";
 
 
-type CollisionResult = false | CollisionResultSuccess
-interface CollisionResultSuccess {
-    pointOfContact?: Vec2
+export type CollisionResult = { success: false } | CollisionResultSuccess
+export interface CollisionResultSuccess {
+    pointOfContact: Vec2
     element: DndElement
     distance: number
+    success: true
 }
 
+
+export function computeIntersectRectArea(): CollisionResult {
+    const context = Context.getState()
+    const active = context.activeElement;
+    active?.updateRect()
+
+    if (!active) return { success: false }
+
+    let closestElement: DndElement | null = null
+    let closestDistance = 0
+    // let bestRatio = 0;
+
+    // topleft corner
+    const a_l = new Vec2(active.rect.left, active.rect.top)
+    // bottomright corner
+    const a_r = new Vec2(active.rect.right, active.rect.bottom)
+
+    let pointOfContact = new Vec2(0, 0)
+
+    for (const [, element] of context.elements) {
+        if (element.id === active.id || !element.droppable) continue
+
+        const b_l: Vec2 = new Vec2(element.rect.left, element.rect.top)
+        const b_r: Vec2 = new Vec2(element.rect.right, element.rect.bottom)
+
+        let areaRatio = 0;
+        const localPointOfContact = new Vec2(0, 0)
+
+        const bottom = Math.min(a_r.y, b_r.y)
+        const top = Math.max(a_l.y, b_l.y)
+
+        const right = Math.min(a_r.x, b_r.x)
+        const left = Math.max(a_l.x, b_l.x)
+
+
+        if (bottom > top && right > left) {
+            // debugger
+            const height = bottom - top;
+            const width = right - left
+
+            if (top === b_l.y) {
+                localPointOfContact.y = -1
+            } else {
+                localPointOfContact.y = 1
+            }
+            if (left === b_l.x) {
+                localPointOfContact.x = -1
+            } else {
+                localPointOfContact.x = 1
+            }
+
+            const elementArea = (b_r.x - b_l.x) * (b_r.y - b_l.y)
+
+
+            const areaInside = height * width
+            areaRatio = areaInside / elementArea
+            // y plane is inside
+        }
+
+        if (areaRatio > closestDistance) {
+            closestDistance = areaRatio
+            closestElement = element
+            pointOfContact = localPointOfContact
+        }
+
+
+    }
+    if (!closestElement) return { success: false }
+
+    return { element: closestElement, distance: closestDistance, pointOfContact, success: true }
+
+}
+
+
+export function normalizeVecToDirectionType(vec: Vec2): DirectionType {
+
+
+}
 
 export function computeIntersectRect(ev: DndPointerEvent): CollisionResult {
     const context = Context.getState()
@@ -72,7 +152,7 @@ export function computeClosestDroppable(ev: DndPointerEvent, allElements: Map<Un
     // max 32bit uint 
     let closestDistance = -1 >>> 1 // other cool way is ~0 >>> 1
     let closestElement: DndElement | null = null;
-    const pointOfContact = { x: 0, y: 0 }
+    const pointOfContact = new Vec2(0, 0)
 
 
     for (const [, element] of allElements) {
@@ -115,11 +195,13 @@ export function computeClosestDroppable(ev: DndPointerEvent, allElements: Map<Un
 
     }
 
-    if (closestElement === null) return false
+    if (closestElement === null) return { success: false }
     return {
         element: closestElement,
         distance: closestDistance,
-        pointOfContact
+        pointOfContact,
+        success: true
+
     }
 
 }
@@ -158,7 +240,10 @@ export function createContextSnapshot(ev: DndPointerEvent): DndEventOptions {
 
 
 /** Very simple implementation, its mostly just to compare node's bounding boxes */
-export function compareObjects(obj1: object, obj2: object): boolean {
+export function compareObjects(obj1: object | null | undefined, obj2: object | null | undefined): boolean {
+    if (obj1 === obj2) return true
+    if (!obj2) return false
+    if (!obj1) return false
 
     const keys1 = Object.keys(obj1)
     const keys2 = Object.keys(obj2)
@@ -242,7 +327,7 @@ export function clearOverStack(ev: DndPointerEvent) {
 
 export function CSSTransform(transform: Transform): string {
     if (!transform.x && !transform.y && !transform.z && transform.scale === 1) return 'unset'
-    return `translate3d(${transform.x}px, ${transform.y}px, ${transform.z}px) scale(${transform.scale})`
+    return `translate3d(${transform.x}px, ${transform.y}px, 0px) scale(${transform.scale})`
 }
 
 export function lerpValue(a: number, b: number, time: number, updater: (val: number) => void) {

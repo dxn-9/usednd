@@ -24,8 +24,8 @@ interface DndOptions {
 
 export interface DirectionType {
     // vector: Vec2;
-    up: boolean;
-    down: boolean;
+    top: boolean;
+    bottom: boolean;
     left: boolean;
     right: boolean;
 }
@@ -82,7 +82,7 @@ export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks }: 
     const setNode = (node: HTMLElement | null) => {
         nodeRef.current = node // this is to make ts happy 
     }
-    console.log('TRANSFORM', id, transform)
+    // console.log('TRANSFORM', id, transform)
 
     const cbs: Partial<DndElementEvents> = useMemo(() => ({
         onDragStart: (o) => {
@@ -90,7 +90,7 @@ export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks }: 
 
             startTransition(() => {
                 setState((prev) => ({ ...prev, active: true }))
-                setTransform(() => ({ x: 0, y: 0, z: 999, scale: 1 }))
+                setTransform(() => ({ x: 0, y: 0, z: 0, scale: 1 }))
             })
             callbacks?.onDragStart?.(o)
         },
@@ -107,15 +107,36 @@ export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks }: 
             callbacks?.onDragEnd?.(o)
         }),
         onDragMove: ((o) => {
+            // console.log('ON DRAG MOVE DELTA', o.active.movementDelta)
             setTransform((prev) => ({ x: o.active.movementDelta.x, y: o.active.movementDelta.y, z: 999, scale: prev.scale }))
         }),
         onDragOverEnd: ((o) => {
 
-            setState((prev) => ({ ...prev, over: false }))
+            setOver({ isOver: false, direction: null })
+            // setState((prev) => ({ ...prev, over: false }))
+        }),
+        onDragOverMove: ((o) => {
+            if (o.collision.pointOfContact) {
+                const direction = o.collision.pointOfContact.normalize().toDirection()
+
+                const sameDir = compareObjects(direction, over.direction)
+                if (!sameDir) {
+
+                    setOver({ isOver: true, direction })
+
+                }
+            }
         }),
         onDragOverStart: ((o) => {
+            console.log('ON COLLISION START', o, id)
 
-            setState((prev) => ({ ...prev, over: true }))
+            if (o.collision.pointOfContact) {
+
+                const direction = o.collision.pointOfContact.normalize().toDirection()
+                console.log('setting for', id, direction)
+                setOver({ isOver: true, direction })
+            }
+            // setState((prev) => ({ ...prev, over: true }))
         }),
 
 
@@ -129,6 +150,7 @@ export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks }: 
         // }
     }), [callbacks])
 
+    // console.log('over state', over, id)
 
 
 
@@ -151,6 +173,7 @@ export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks }: 
             context.unregister(id)
         }
     }, [])
+
     useEffect(() => {
         /** check on every render if the position has changed, if so update the context , and do not update the rect if active, 
          * since we just use pointer position */
@@ -159,19 +182,22 @@ export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks }: 
                 // recompute the element box
                 // console.log('recalculating')
                 // contextElem.rect = getElementRect(nodeRef.current)
-                console.log('updating rect')
+                // console.log('updating rect')
                 elemRef.current?.updateRect()
             }
 
+        }
+        if (elemRef.current && data !== elemRef.current.data) {
+            elemRef.current.data = data
         }
 
     })
 
     useEffect(() => {
         // we queue the cleanup functions to be executed after the react state has been updated so that no referecens are lost
-        console.log(context.cleanupFunctions)
+        // console.log(context.cleanupFunctions)
         while (context.cleanupFunctions.length > 0) {
-            console.log(' running cleanup')
+            // console.log(' running cleanup')
             const fn = context.cleanupFunctions.pop()
             fn?.()
         }

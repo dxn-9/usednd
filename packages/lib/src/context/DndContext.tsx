@@ -1,5 +1,5 @@
 import React, { PropsWithChildren, cloneElement, createContext, startTransition, useEffect, useMemo, useRef, useState } from "react"
-import { clearOverStack, compareObjects, computeClosestDroppable, computeIntersectRect } from '../utils'
+import { clearOverStack, compareObjects, computeClosestDroppable, computeIntersectRect, computeIntersectRectArea } from '../utils'
 import { DndContext, UniqueId } from "./ContextTypes"
 import { DndElement, } from "../entities/DndElement"
 import { DndEvents } from "../options/DndEvents"
@@ -109,9 +109,9 @@ export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({ col
 
 		}
 		function pointerMove(ev: PointerEvent) {
+			// console.log('pointer move')
 			if (!context.isDragging) return
-			// console.log('is dragging')
-
+			// console.log('is dragging', context.activeElement)
 			// if its dragging and its not inside a droppable element
 
 			if (collisionDetection === DndCollision.ClosestPoint) {
@@ -120,25 +120,25 @@ export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({ col
 					while (context.overStack.length > 0) {
 						clearOverStack(ev)
 					}
-					return
-
-				}
-
-				if (debug) {
-					/** Update debug line if debug - just do it imperatively so it doesnt affect react performance */
-					const line = document.querySelector('#dnd-debug-view') as SVGLineElement
-					line.setAttribute('x1', ev.pageX.toString())
-					line.setAttribute('x2', result.pointOfContact?.x.toString())
-					line.setAttribute('y1', ev.pageY.toString())
-					line.setAttribute('y2', result.pointOfContact?.y.toString())
-				}
-
-				if (result.element.isOver) {
-					/** if its still over the same element, just fire the move */
-					result.element.onDragOverMove(ev)
-
 				} else {
-					result.element?.onDragOverStart(ev)
+
+					if (debug) {
+						/** Update debug line if debug - just do it imperatively so it doesnt affect react performance */
+						const line = document.querySelector('#dnd-debug-view') as SVGLineElement
+						line.setAttribute('x1', ev.pageX.toString())
+						line.setAttribute('x2', result.pointOfContact?.x.toString())
+						line.setAttribute('y1', ev.pageY.toString())
+						line.setAttribute('y2', result.pointOfContact?.y.toString())
+					}
+
+					if (result.element.isOver) {
+						/** if its still over the same element, just fire the move */
+						result.element.onDragOverMove(ev, result)
+
+					} else {
+						result.element?.onDragOverStart(ev, result)
+
+					}
 
 				}
 			}
@@ -153,10 +153,29 @@ export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({ col
 
 				} else {
 					if (result.element.isOver) {
-						result.element.onDragOverMove(ev)
+						result.element.onDragOverMove(ev, result)
 
 					} else {
-						result.element.onDragOverStart(ev)
+						result.element.onDragOverStart(ev, result)
+					}
+				}
+			}
+
+			if (collisionDetection === DndCollision.RectIntersectArea) {
+				const result = computeIntersectRectArea(ev)
+
+				if (!result || !result.element) {
+					while (context.overStack.length > 0) {
+						clearOverStack(ev)
+					}
+				} else {
+					// console.log('RESULT', result)
+					result.element.overPointOfContact = result.pointOfContact
+					if (result.element.isOver) {
+						result.element.onDragOverMove(ev, result)
+
+					} else {
+						result.element.onDragOverStart(ev, result)
 					}
 				}
 			}

@@ -1,9 +1,11 @@
 import React from "react";
-import { DndElementRect, UniqueId, Vec2 } from "../context/ContextTypes";
-import { getElementRect, pow2, todo } from "../utils";
+import { DndElementRect, UniqueId, } from "../context/ContextTypes";
+import { getElementRect, pow2, todo, CollisionResultSuccess } from "../utils";
 import { Context } from "../context/DndContext";
 import { DndElementEvents, DndPointerEvent } from "../options/DndEvents";
 import { Transform } from "../hooks/useDnd";
+import { DndCollision } from "../options/DndCollisions";
+import { Vec2 } from "./Vec2";
 
 
 
@@ -18,6 +20,7 @@ export class DndElement<T = unknown>  {
     initialPoint: Vec2
     isActive: boolean
     isOver: boolean
+    overPointOfContact?: Vec2
     transform: Transform
     callbacks?: DndElementEvents
     data?: T
@@ -29,12 +32,14 @@ export class DndElement<T = unknown>  {
         this.droppable = options.droppable
         this.callbacks = options.callbacks
         this.data = options.data
-        this.movementDelta = { x: 0, y: 0 }
-        this.initialPoint = { x: 0, y: 0 }
+        this.movementDelta = new Vec2(0, 0)
+        this.initialPoint = new Vec2(0, 0)
         this.isActive = false
         this.isOver = false
+        this.overPointOfContact = new Vec2(0, 0);
+
         this.updateRect()
-        this.transform = { x: 0, y: 0, scale: 1 }
+        this.transform = { x: 0, y: 0, z: 0, scale: 1 }
     }
 
     public updateRect() {
@@ -73,20 +78,24 @@ export class DndElement<T = unknown>  {
     public onDrop(ev: DndPointerEvent) {
         console.log('on DROP CALLED')
     }
-    public onDragOverStart(ev: DndPointerEvent) {
+    public onDragOverStart(ev: DndPointerEvent, collisionResult: CollisionResultSuccess) {
         const context = Context.getState()
 
         context.overElement?.onDragOverLeave(ev)
         context.overElement = this
         context.overStack.push(this)
         this.isOver = true
+        this.overPointOfContact = collisionResult.pointOfContact
 
         if (this.callbacks?.onDragOverStart) {
-            this.callbacks.onDragOverStart({ active: this })
+            this.callbacks.onDragOverStart({ active: this, collision: collisionResult })
         }
     }
-    public onDragOverMove(ev: DndPointerEvent) {
-        todo('onOver - droppable')
+    public onDragOverMove(ev: DndPointerEvent, collisionResult: CollisionResultSuccess) {
+        this.overPointOfContact = collisionResult.pointOfContact
+        if (this.callbacks?.onDragOverMove) {
+            this.callbacks.onDragOverMove({ active: this, collision: collisionResult })
+        }
     }
     public onDragOverLeave(ev: DndPointerEvent) {
         const context = Context.getState()

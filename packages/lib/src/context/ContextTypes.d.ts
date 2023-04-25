@@ -30,10 +30,10 @@ export interface DndElementCallbacks {
     /** TODO: */
     onOutsideOverLeave?: (ev: any) => any
 }
-export interface Vec2 {
-    x: number
-    y: number
-}
+// export interface Vec2 {
+//     x: number
+//     y: number
+// }
 
 export type DndContext = DndContextInt & ({ isDragging: true; activeElement: DndElement } | { isDragging: false; activeElement: null })
 

@@ -2,15 +2,19 @@ import React from 'react'
 import { DndContext } from '../context/ContextTypes'
 import { DndElement } from '../entities/DndElement'
 import { Defined } from '../utils/types'
+import { DirectionType } from '../hooks/useDnd'
+import { CollisionResultSuccess } from '../utils'
 
 
 export interface DndEventOptions<T = unknown> {
     context: DndContext
     active: DndElement
     over: DndElement | null
-    target?: DndElement
-    data?: T
     event: DndPointerEvent
+}
+export interface DndDropEventOptions extends DndEventOptions {
+    collision: CollisionResultSuccess
+
 }
 
 export type DndPointerEvent = React.PointerEvent | PointerEvent
@@ -21,10 +25,10 @@ export interface DndEvents {
     onDragStart(options: DndEventOptions): unknown
     onDragEnd(options: DndEventOptions): unknown
     onDragMove(options: DndEventOptions): unknown
-    onDragOverStart(options: DndEventOptions): unknown
-    onDragOverMove(options: DndEventOptions): unknown
-    onDragOverEnd(options: DndEventOptions): unknown
-    onDrop(options: Defined<DndEventOptions, 'over'>): unknown
+    onDragOverStart(options: DndDropEventOptions): unknown
+    onDragOverMove(options: DndDropEventOptions): unknown
+    onDragOverEnd(options: DndDropEventOptions): unknown
+    onDrop(options: DndDropEventOptions): unknown
 }
 
 export interface DndElementEvents extends DndEvents {

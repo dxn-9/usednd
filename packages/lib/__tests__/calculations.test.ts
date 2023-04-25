@@ -30,8 +30,11 @@ it('should compute closest droppable', () => {
     // ^ distanceToCenter: 81,3941.. , dragAngle: 0,7419472680059174, ^y: 5 x: ~5,454545 => dist ~7,399463 -- totalDist = ~73,994637
 
 
-    expect(result.closestDistance).toBeCloseTo(73.994637)
-    expect(result.pointOfContact.x).toBeCloseTo(rect2.center[0] - 5.454545)
-    expect(result.pointOfContact.y).toBeCloseTo(rect2.center[1] - 5)
+    expect(result.success).toBeTruthy()
+    if (result.success) {
+        expect(result.distance).toBeCloseTo(73.994637)
+        expect(result.pointOfContact.x).toBeCloseTo(rect2.center[0] - 5.454545)
+        expect(result.pointOfContact.y).toBeCloseTo(rect2.center[1] - 5)
+    }
     // we expect the values to be subtracted because the drag point is from above
 })
