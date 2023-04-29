@@ -1,31 +1,18 @@
-import React, { createElement, startTransition, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import ReactDOM from 'react-dom'
+import React, { startTransition, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Context } from '../context/DndContext'
-import { DndContext, UniqueId, Vec2, } from '../context/ContextTypes'
-import { CollisionResult, CollisionResultSuccess, compareObjects, computeDirection, getElementRect, lerpValue, normalize, todo } from '../utils'
-import { computeClosestDroppable } from '../utils'
-import { createPortal } from 'react-dom'
+import { UniqueId } from '../context/ContextTypes'
+import { compareObjects, getElementRect, } from '../utils'
 import { onPointerDown, } from '../context/DragEvents'
 import { DndElementEvents } from '../options/DndEvents'
-import { DndElement } from '../entities/DndElement'
-import { onPointerEnter, onPointerLeave, onPointerMove } from '../context/DropEvents'
-import { useSpring, useSpringValue } from '@react-spring/web'
+import { DndElement, DndElementOptions } from '../entities/DndElement'
 
 
-interface DndOptions {
-    draggable: boolean
-    droppable: boolean
-    data?: any
-    callbacks?: Partial<DndElementEvents>
-    collisionFilter?: (coll: CollisionResultSuccess) => boolean
-}
 
 
 
 
 
 export interface DirectionType {
-    // vector: Vec2;
     top: boolean;
     bottom: boolean;
     left: boolean;
@@ -44,7 +31,7 @@ type OverType = {
 
 
 
-function getSyntethicListeners(id: UniqueId, options: DndOptions) {
+function getSyntethicListeners(id: UniqueId, options: DndElementOptions) {
     // console.log('id ', id)
     const events = {} as Record<string, (ev: React.PointerEvent) => void>
     if (options.draggable) {
@@ -67,7 +54,7 @@ export interface Transform {
     scale: number
 }
 
-export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks, collisionFilter }: DndOptions = { draggable: true, droppable: true }) => {
+export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks, collisionFilter }: DndElementOptions = { draggable: true, droppable: true }) => {
     const context = useContext(Context)
     const elemRef = useRef<DndElement | null>(null)
     const nodeRef = useRef<HTMLElement | null>(null)
@@ -88,8 +75,7 @@ export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks, co
 
     const cbs: Partial<DndElementEvents> = useMemo(() => ({
         onDragStart: (o) => {
-            nodeRef.current!.style.zIndex = '9999'
-            console.log('ON DRAG START')
+            if (nodeRef.current) nodeRef.current.style.zIndex = '9999'
 
             startTransition(() => {
                 setActive(true)
@@ -99,7 +85,7 @@ export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks, co
         },
         onDragEnd: ((o) => {
 
-            nodeRef.current!.style.zIndex = '0'
+            if (nodeRef.current) nodeRef.current.style.zIndex = '0'
             startTransition(() => {
                 setActive(false)
                 setTransform({ x: 0, y: 0, z: 0, scale: 1 })
@@ -111,19 +97,13 @@ export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks, co
             callbacks?.onDragEnd?.(o)
         }),
         onDragMove: ((o) => {
-            console.log('ON DRAG MOVE')
-            // console.log('ON DRAG MOVE DELTA', o.active.movementDelta)
             setTransform((prev) => ({ x: o.active.movementDelta.x, y: o.active.movementDelta.y, z: 999, scale: prev.scale }))
         }),
-        onDragOverEnd: ((o) => {
-
+        onDragOverLeave: ((o) => {
             setOver({ isOver: false, direction: null })
-            // setState((prev) => ({ ...prev, over: false }))
         }),
         onDragOverMove: ((o) => {
             const direction = o.collision.pointOfContact.toDirection()
-            console.log('ON DRAG MOVE', o.collision.pointOfContact, direction)
-
             const sameDir = compareObjects(direction, over.direction)
             if (!sameDir) {
 
@@ -132,30 +112,15 @@ export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks, co
             }
         }),
         onDragOverStart: ((o) => {
-            console.log('ON COLLISION START', o, id)
-
             if (o.collision.pointOfContact) {
-
                 const direction = o.collision.pointOfContact.toDirection()
-                console.log('setting for', id, direction)
                 setOver({ isOver: true, direction })
             }
-            // setState((prev) => ({ ...prev, over: true }))
         }),
 
 
 
-        // ...callbacks
-        // onDragMove: (o) => {
-        //     setState((prev) => ({ ...prev, active: true, transform: o.active.movementDelta }))
-        // },
-        // onDragEnd: (o) => {
-        //     setState((prev) => ({ ...prev, active: false, transform: { x: 0, y: 0 } }))
-        // }
     }), [callbacks])
-
-    // console.log('over state', over, id)
-
 
 
 
@@ -185,9 +150,6 @@ export const useDnd = (id: UniqueId, { draggable, droppable, data, callbacks, co
         if (elemRef.current && !elemRef.current.isActive) {
             if (!compareObjects(elemRef.current.rect, getElementRect(elemRef.current.node))) {
                 // recompute the element box
-                // console.log('recalculating')
-                // contextElem.rect = getElementRect(nodeRef.current)
-                // console.log('updating rect')
                 elemRef.current?.updateRect()
             }
 

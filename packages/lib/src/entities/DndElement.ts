@@ -1,6 +1,6 @@
 import React from "react";
 import { DndElementRect, UniqueId, } from "../context/ContextTypes";
-import { getElementRect, pow2, todo, CollisionResultSuccess, Collision } from "../utils";
+import { getElementRect, pow2, todo, CollisionResultSuccess, Collision, createEventOptions } from "../utils";
 import { Context } from "../context/DndContext";
 import { DndElementEvents, DndPointerEvent } from "../options/DndEvents";
 import { Transform } from "../hooks/useDnd";
@@ -8,25 +8,34 @@ import { DndCollision } from "../options/DndCollisions";
 import { Vec2 } from "./Vec2";
 
 
+export interface DndElementOptions {
+    draggable: boolean;
+    droppable: boolean;
+    callbacks?: Partial<DndElementEvents>
+    data?: any
+    collisionFilter?: (collision: Collision) => boolean
+
+}
 
 
-export class DndElement<T = any>  {
+export class DndElement {
     id: UniqueId
     node: HTMLElement
     rect!: DndElementRect;
-    draggable: boolean
-    droppable: boolean
     movementDelta: Vec2
     initialPoint: Vec2
     isActive: boolean
     isOver: boolean
-    overPointOfContact?: Vec2
+    lastCollision?: CollisionResultSuccess;
     transform: Transform
-    callbacks?: DndElementEvents
-    data?: T
-    collisionFilter?: (coll: Collision) => boolean
 
-    constructor(id: UniqueId, node: HTMLElement, options: { draggable: boolean, droppable: boolean, callbacks?: DndElementEvents, data?: T, collisionFilter?: (coll: CollisionResultSuccess) => boolean }) {
+    draggable: DndElementOptions['draggable']
+    droppable: DndElementOptions['droppable']
+    callbacks?: DndElementOptions['callbacks']
+    data?: DndElementOptions['data']
+    collisionFilter?: DndElementOptions['collisionFilter']
+
+    constructor(id: UniqueId, node: HTMLElement, options: DndElementOptions) {
         this.id = id
         this.node = node
         this.draggable = options.draggable
@@ -38,11 +47,9 @@ export class DndElement<T = any>  {
         this.initialPoint = new Vec2(0, 0)
         this.isActive = false
         this.isOver = false
-        this.overPointOfContact = new Vec2(0, 0);
-
+        this.transform = { x: 0, y: 0, z: 0, scale: 1 }
 
         this.updateRect()
-        this.transform = { x: 0, y: 0, z: 0, scale: 1 }
     }
 
     public updateRect() {
@@ -58,68 +65,45 @@ export class DndElement<T = any>  {
         ctx.isDragging = true
         ctx.isOutside = true
 
-        if (this.callbacks?.onDragStart) {
-            this.callbacks.onDragStart({ active: this, over: null, event: ev })
-        }
+        this.callbacks?.onDragStart?.(createEventOptions(ev))
 
     }
     public onDragEnd(ev: DndPointerEvent) {
 
-        if (this.callbacks?.onDragEnd) {
-            this.callbacks.onDragEnd({ active: this })
-        }
+        this.callbacks?.onDragEnd?.(createEventOptions(ev))
     }
     public onDragMove(ev: DndPointerEvent) {
         this.movementDelta.x = -(this.initialPoint.x - ev.pageX)
         this.movementDelta.y = -(this.initialPoint.y - ev.pageY)
-        // xd
 
-        if (this.callbacks?.onDragMove) {
-            this.callbacks.onDragMove({ active: this })
-        }
+        this.callbacks?.onDragMove?.(createEventOptions(ev))
     }
 
-    public onDrop(ev: DndPointerEvent) {
-        console.log('on DROP CALLED')
+    public onDrop(ev: DndPointerEvent, collision: CollisionResultSuccess) {
+        this.callbacks?.onDrop?.(createEventOptions(ev, collision))
     }
-    public onDragOverStart(ev: DndPointerEvent, collisionResult: CollisionResultSuccess) {
+    public onDragOverStart(ev: DndPointerEvent, collision: CollisionResultSuccess) {
         const context = Context.getState()
 
-        context.overElement?.onDragOverLeave(ev)
+        context.overElement?.onDragOverLeave?.(ev)
         context.overElement = this
-        context.overStack.push(this)
         this.isOver = true
-        this.overPointOfContact = collisionResult.pointOfContact
+        this.lastCollision = collision
 
-        if (this.callbacks?.onDragOverStart) {
-            this.callbacks.onDragOverStart({ active: this, collision: collisionResult })
-        }
+        this.callbacks?.onDragOverStart?.(createEventOptions(ev, collision))
     }
-    public onDragOverMove(ev: DndPointerEvent, collisionResult: CollisionResultSuccess) {
-        this.overPointOfContact = collisionResult.pointOfContact
-        if (this.callbacks?.onDragOverMove) {
-            this.callbacks.onDragOverMove({ active: this, collision: collisionResult })
-        }
+    public onDragOverMove(ev: DndPointerEvent, collision: CollisionResultSuccess) {
+        this.lastCollision = collision
+        this.callbacks?.onDragOverMove?.(createEventOptions(ev, collision))
     }
     public onDragOverLeave(ev: DndPointerEvent) {
-        const context = Context.getState()
-
         this.isOver = false
-        context.overStack.pop()
-
-        if (context.overStack.length > 0) {
-            context.overElement = context.overStack[context.overStack.length - 1]
-        } else {
-            context.overElement = null
-        }
-
-        if (this.callbacks?.onDragOverEnd) {
-            this.callbacks.onDragOverEnd({ active: this })
-        }
+        this.lastCollision = undefined
+        this.callbacks?.onDragOverLeave?.(createEventOptions(ev))
 
     }
     public onActive(ev: DndPointerEvent) {
-        todo('onActive - draggable')
+        this.callbacks?.onActive?.(createEventOptions(ev))
     }
 
 

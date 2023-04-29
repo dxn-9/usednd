@@ -3,3 +3,6 @@
 export type Defined<T, K extends keyof T> = T & Required<{
     [P in K]: NonNullable<T[P]>
 }>
+
+
+
