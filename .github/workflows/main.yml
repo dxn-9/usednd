@@ -1,0 +1,19 @@
+name: main
+run-name: ${{ github.actor }} Tests tests
+on: 
+  workflow_dispatch:
+  push: 
+    branches:
+      - main
+jobs:
+  test-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+     
+      - run: pnpm install
+      - run: pnpm run test
