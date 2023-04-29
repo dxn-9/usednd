@@ -8,23 +8,29 @@ import { Vec2 } from "../entities/Vec2";
 
 
 export type CollisionResult = { success: false } | CollisionResultSuccess
-export interface CollisionResultSuccess {
+export interface CollisionResultSuccess extends Collision {
     pointOfContact: Vec2
     element: DndElement
     distance: number
     success: true
 }
 
+export interface Collision {
+    element: DndElement;
+    distance: number;
+    pointOfContact: Vec2
+}
 
-export function computeIntersectRectArea(): CollisionResult {
+
+export function computeIntersectRect(): CollisionResult {
     const context = Context.getState()
     const active = context.activeElement;
     active?.updateRect()
 
     if (!active) return { success: false }
 
-    let closestElement: DndElement | null = null
-    let closestDistance = 0
+    let element: DndElement | null = null
+    let distance = 0
     // let bestRatio = 0;
 
     // topleft corner
@@ -34,11 +40,11 @@ export function computeIntersectRectArea(): CollisionResult {
 
     let pointOfContact = new Vec2(0, 0)
 
-    for (const [, element] of context.elements) {
-        if (element.id === active.id || !element.droppable) continue
+    for (const [, target] of context.elements) {
+        if (target.id === active.id || !target.droppable) continue
 
-        const b_l: Vec2 = new Vec2(element.rect.left, element.rect.top)
-        const b_r: Vec2 = new Vec2(element.rect.right, element.rect.bottom)
+        const b_l: Vec2 = new Vec2(target.rect.left, target.rect.top)
+        const b_r: Vec2 = new Vec2(target.rect.right, target.rect.bottom)
 
         let areaRatio = 0;
         const localPointOfContact = new Vec2(0, 0)
@@ -51,7 +57,6 @@ export function computeIntersectRectArea(): CollisionResult {
 
 
         if (bottom > top && right > left) {
-            // debugger
             const height = bottom - top;
             const width = right - left
 
@@ -74,17 +79,21 @@ export function computeIntersectRectArea(): CollisionResult {
             // y plane is inside
         }
 
-        if (areaRatio > closestDistance) {
-            closestDistance = areaRatio
-            closestElement = element
-            pointOfContact = localPointOfContact
+        const result: Collision = { pointOfContact: localPointOfContact, distance: areaRatio, element: target }
+        const isAllowed = active.collisionFilter ? active.collisionFilter(result) : true
+
+        if (isAllowed && areaRatio > distance) {
+            // we want in this case the element with the biggest intersection
+            distance = areaRatio
+            element = result.element
+            pointOfContact = result.pointOfContact
         }
 
 
     }
-    if (!closestElement) return { success: false }
+    if (!element) return { success: false }
 
-    return { element: closestElement, distance: closestDistance, pointOfContact, success: true }
+    return { element, distance, pointOfContact, success: true }
 
 }
 
@@ -94,55 +103,6 @@ export function normalizeVecToDirectionType(vec: Vec2): DirectionType {
 
 }
 
-export function computeIntersectRect(ev: DndPointerEvent): CollisionResult {
-    const context = Context.getState()
-    const active = context.activeElement;
-    active?.updateRect()
-
-    if (!active) return false
-
-    let closestElement: DndElement | null = null
-    let closestDistance = 0
-
-    // topleft corner
-    const a_l: Vec2 = { x: active.rect.left, y: active.rect.top }
-    // bottomright corner
-    const a_r: Vec2 = { x: active.rect.right, y: active.rect.bottom }
-
-
-    for (const [, element] of context.elements) {
-        if (element.id === active.id || !element.droppable) continue
-
-        const b_l: Vec2 = { x: element.rect.left, y: element.rect.top }
-        const b_r: Vec2 = { x: element.rect.right, y: element.rect.bottom }
-
-        let areaInside = 0;
-        const bottom = Math.min(a_r.y, b_r.y)
-        const top = Math.max(a_l.y, b_l.y)
-
-        const right = Math.min(a_r.x, b_r.x)
-        const left = Math.max(a_l.x, b_l.x)
-
-
-        if (bottom > top && right > left) {
-            const height = bottom - top;
-            const width = right - left
-            areaInside = height * width
-            // y plane is inside
-        }
-
-        if (areaInside > closestDistance) {
-            closestDistance = areaInside
-            closestElement = element
-        }
-
-
-    }
-    if (!closestElement) return false
-
-    return { element: closestElement, distance: closestDistance }
-
-}
 
 export function computeClosestCenter() {
     todo("compute closest center")
@@ -187,8 +147,8 @@ export function computeClosestDroppable(ev: DndPointerEvent, allElements: Map<Un
         const distance = distanceToCenter - dist;
 
         if (distance < closestDistance) {
-            pointOfContact.x = element.rect.center.x + (ev.pageX > element.rect.center.x ? x : -x)
-            pointOfContact.y = element.rect.center.y + (ev.pageY > element.rect.center.y ? y : -y)
+            pointOfContact.x = element.rect.center.x - (element.rect.center.x + (ev.pageX > element.rect.center.x ? -x : +x))
+            pointOfContact.y = element.rect.center.y - (element.rect.center.y + (ev.pageY > element.rect.center.y ? -y : +y))
             closestDistance = distance;
             closestElement = element
         }

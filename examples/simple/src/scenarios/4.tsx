@@ -24,13 +24,13 @@ const Scenario4 = () => {
 
 }
 function Draggable() {
-    const { setNode, listeners, state, transform } = useDnd(`draggable`, { draggable: true, droppable: false })
+    const { setNode, listeners, transform } = useDnd(`draggable`, { draggable: true, droppable: false })
     return <div ref={setNode} className='bg-slate-600 rounded-md  h-12 w-20 z-10 relative' {...listeners} style={{ transform: CSSTransform(transform) }}  >Draggable</div>
 }
 
 function Droppable({ id, children }: PropsWithChildren<{ id: number }>) {
-    const { setNode, listeners, state } = useDnd(id, { draggable: false, droppable: true })
-    return <div ref={setNode} {...listeners} className={`bg-gradient-to-r from-indigo-600 to-red-600  border-2 relative border-black w-52 h-52 ${state.over && 'border-red-500'} `}>Droppable
+    const { setNode, listeners, over } = useDnd(id, { draggable: false, droppable: true })
+    return <div ref={setNode} {...listeners} className={`bg-gradient-to-r from-indigo-600 to-red-600  border-2 relative border-black w-52 h-52 ${over.isOver && 'border-red-500'} `}>Droppable
         {children}
     </div>
 }

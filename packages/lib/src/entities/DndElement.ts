@@ -1,6 +1,6 @@
 import React from "react";
 import { DndElementRect, UniqueId, } from "../context/ContextTypes";
-import { getElementRect, pow2, todo, CollisionResultSuccess } from "../utils";
+import { getElementRect, pow2, todo, CollisionResultSuccess, Collision } from "../utils";
 import { Context } from "../context/DndContext";
 import { DndElementEvents, DndPointerEvent } from "../options/DndEvents";
 import { Transform } from "../hooks/useDnd";
@@ -10,7 +10,7 @@ import { Vec2 } from "./Vec2";
 
 
 
-export class DndElement<T = unknown>  {
+export class DndElement<T = any>  {
     id: UniqueId
     node: HTMLElement
     rect!: DndElementRect;
@@ -24,19 +24,22 @@ export class DndElement<T = unknown>  {
     transform: Transform
     callbacks?: DndElementEvents
     data?: T
+    collisionFilter?: (coll: Collision) => boolean
 
-    constructor(id: UniqueId, node: HTMLElement, options: { draggable: boolean, droppable: boolean, callbacks?: DndElementEvents, data?: T }) {
+    constructor(id: UniqueId, node: HTMLElement, options: { draggable: boolean, droppable: boolean, callbacks?: DndElementEvents, data?: T, collisionFilter?: (coll: CollisionResultSuccess) => boolean }) {
         this.id = id
         this.node = node
         this.draggable = options.draggable
         this.droppable = options.droppable
         this.callbacks = options.callbacks
         this.data = options.data
+        this.collisionFilter = options.collisionFilter
         this.movementDelta = new Vec2(0, 0)
         this.initialPoint = new Vec2(0, 0)
         this.isActive = false
         this.isOver = false
         this.overPointOfContact = new Vec2(0, 0);
+
 
         this.updateRect()
         this.transform = { x: 0, y: 0, z: 0, scale: 1 }
@@ -47,7 +50,7 @@ export class DndElement<T = unknown>  {
     }
     /** Events  */
     public onDragStart(ev: DndPointerEvent) {
-        this.initialPoint = { x: ev.pageX, y: ev.pageY }
+        this.initialPoint = new Vec2(ev.pageX, ev.pageY)
         this.isActive = true
 
         const ctx = Context.getState()
@@ -69,6 +72,7 @@ export class DndElement<T = unknown>  {
     public onDragMove(ev: DndPointerEvent) {
         this.movementDelta.x = -(this.initialPoint.x - ev.pageX)
         this.movementDelta.y = -(this.initialPoint.y - ev.pageY)
+        // xd
 
         if (this.callbacks?.onDragMove) {
             this.callbacks.onDragMove({ active: this })

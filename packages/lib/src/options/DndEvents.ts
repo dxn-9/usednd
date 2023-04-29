@@ -2,7 +2,6 @@ import React from 'react'
 import { DndContext } from '../context/ContextTypes'
 import { DndElement } from '../entities/DndElement'
 import { Defined } from '../utils/types'
-import { DirectionType } from '../hooks/useDnd'
 import { CollisionResultSuccess } from '../utils'
 
 
@@ -14,6 +13,7 @@ export interface DndEventOptions<T = unknown> {
 }
 export interface DndDropEventOptions extends DndEventOptions {
     collision: CollisionResultSuccess
+    over: DndElement
 
 }
 

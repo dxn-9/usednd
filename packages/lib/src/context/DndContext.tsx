@@ -6,6 +6,7 @@ import { DndEvents } from "../options/DndEvents"
 import { DndCollision } from "../options/DndCollisions"
 import { flushSync } from "react-dom"
 import { Transform } from "../hooks/useDnd"
+import { updateState } from "../utils/state"
 
 
 
@@ -38,7 +39,7 @@ export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({ col
 	// current problem: if props change the context is not updated or recreated
 	const context = useMemo<DndContext>(() => ({
 		elements: new Map(),
-		cleanupFunctions: [],
+		// cleanupFunctions: [],
 		isDragging: false,
 		isOutside: false,
 		dndProviderProps: { collisionDetection, outsideThreshold, debug, ghost, callbacks },
@@ -47,6 +48,7 @@ export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({ col
 		overElement: null,
 		activeElement: null,
 		register: (id, node, options) => {
+			console.log('registering', id, options)
 
 			const element: DndElement = new DndElement(id, node, options)
 			context.elements?.set(id, element)
@@ -56,7 +58,6 @@ export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({ col
 
 		},
 		unregister: (id) => {
-			// dont delete it
 			context.elements?.delete(id)
 			// context.cleanupFunctions.push(() => context.elements.delete(id))
 		}
@@ -68,55 +69,41 @@ export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({ col
 		function pointerUp(ev: PointerEvent) {
 			if (!context.isDragging) return
 
-			/** Get rid of ghost */
-			// if (ghostNode.current && isElement(ghostNode.current)) {
-			// 	ghostNode.remove()
-			// 	ghostNode.current = null
-			// }
-
-
-
-			if (context.activeElement && context.overElement) {
-				context.overElement.onDrop?.(ev)
-				callbacks?.onDrop?.({ event: ev, active: context.activeElement, over: context.overElement, context })
-
-				// 	/** Cleanup */
-				context.activeElement.node.style.opacity = '1.0'
-			}
-
-			// this is extremely hacky but it does work without compromising ux xd
-			// prevent the screen from being repainted
-
-
-
 
 			startTransition(() => {
-				callbacks.onDragEnd?.({ context, active: context.activeElement, over: context.overElement })
-				context.overElement?.onDragOverLeave?.(ev);
 				context.activeElement?.onDragEnd(ev);
-			})
+				callbacks.onDragEnd?.({ context, active: context.activeElement, over: context.overElement })
 
-			/** Cleanup after the react state has been updated  */
-			// console.log('pushing cleanup')
-			// context.cleanupFunctions.push(() => {
-			// console.log('CLEANUP!!')
-			context.activeElement.movementDelta = { x: 0, y: 0 }
+				if (context.activeElement && context.overElement) {
+					context.overElement.onDrop?.(ev)
+					callbacks?.onDrop?.({ event: ev, active: context.activeElement, over: context.overElement, context })
+
+				}
+
+			});
+
+
+
+
+			/** Cleanup */
+			(context.isDragging as boolean) = false;
+			context.overElement?.onDragOverLeave?.(ev);
+			context.activeElement.movementDelta.x = 0
+			context.activeElement.movementDelta.y = 0
 			context.activeElement.isActive = false;
 			context.overStack = [];
 			(context.isDragging as boolean) = false;
 			(context.activeElement as DndElement | null) = null;
-			// })
 
 		}
 		function pointerMove(ev: PointerEvent) {
-			// console.log('pointer move')
 			if (!context.isDragging) return
 			// console.log('is dragging', context.activeElement)
 			// if its dragging and its not inside a droppable element
 
 			if (collisionDetection === DndCollision.ClosestPoint) {
 				const result = computeClosestDroppable(ev, context.elements, context.activeElement)
-				if (!result || result.distance > outsideThreshold) {
+				if (!result.success || result.distance > outsideThreshold) {
 					while (context.overStack.length > 0) {
 						clearOverStack(ev)
 					}
@@ -126,9 +113,9 @@ export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({ col
 						/** Update debug line if debug - just do it imperatively so it doesnt affect react performance */
 						const line = document.querySelector('#dnd-debug-view') as SVGLineElement
 						line.setAttribute('x1', ev.pageX.toString())
-						line.setAttribute('x2', result.pointOfContact?.x.toString())
+						line.setAttribute('x2', result.element.rect.center.x + result.pointOfContact?.x)
 						line.setAttribute('y1', ev.pageY.toString())
-						line.setAttribute('y2', result.pointOfContact?.y.toString())
+						line.setAttribute('y2', result.element.rect.center.y + result.pointOfContact.y)
 					}
 
 					if (result.element.isOver) {
@@ -143,28 +130,11 @@ export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({ col
 				}
 			}
 
+
 			if (collisionDetection === DndCollision.RectIntersect) {
-				const result = computeIntersectRect(ev)
+				const result = computeIntersectRect()
 
-				if (!result) {
-					while (context.overStack.length > 0) {
-						clearOverStack(ev)
-					}
-
-				} else {
-					if (result.element.isOver) {
-						result.element.onDragOverMove(ev, result)
-
-					} else {
-						result.element.onDragOverStart(ev, result)
-					}
-				}
-			}
-
-			if (collisionDetection === DndCollision.RectIntersectArea) {
-				const result = computeIntersectRectArea(ev)
-
-				if (!result || !result.element) {
+				if (!result.success) {
 					while (context.overStack.length > 0) {
 						clearOverStack(ev)
 					}

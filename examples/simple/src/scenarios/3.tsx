@@ -1,7 +1,6 @@
 import { DndProvider, useDnd } from 'lib'
 import { CSSTransform } from 'lib/src/utils'
-import React, { useState } from 'react'
-import { flushSync } from 'react-dom'
+import React from 'react'
 const Scenario3 = () => {
     const [position, setPosition] = React.useState({ x: 0, y: 0 })
 
@@ -9,14 +8,10 @@ const Scenario3 = () => {
     return <div className='w-screen flex justify-center items-center'>
         <DndProvider onDragEnd={(options) => {
             setPosition((prev) => {
-
-                console.log('set position', options.active, options.active.movementDelta.y)
-
                 return ({
                     x: prev.x + options.active.movementDelta.x, y: prev.y + options.active.movementDelta.y
                 })
             })
-            console.log('after set position')
         }
         }>
             <SimpleDraggable position={position} />
@@ -28,11 +23,10 @@ const Scenario3 = () => {
 function SimpleDraggable({ position }: { position: { x: number, y: number } }) {
 
 
-    const { setNode, listeners, state, transform } = useDnd(1, {
+    const { setNode, listeners, transform, active } = useDnd(1, {
         draggable: true, droppable: false
     })
-    // console.log('DRAGGABLE RENDER', position, state.transform)
-    return <div className={`w-28 h-12 rounded bg-slate-900 text-center relative ${state.active && 'bg-red-500'}`} style={{ top: position.y, left: position.x, transform: CSSTransform(transform) }} ref={setNode} {...listeners}>Draggable</div>
+    return <div className={`w-28 h-12 rounded bg-slate-900 text-center relative ${active && 'border-2 border-red-500'}`} style={{ top: position.y, left: position.x, transform: CSSTransform(transform) }} ref={setNode} {...listeners}>Draggable</div>
 }
 
 export default Scenario3

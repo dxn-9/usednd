@@ -1,5 +1,4 @@
-import React, { PropsWithChildren, useEffect, useState } from 'react'
-import { useDnd, Provider } from 'lib'
+import React, { useState } from 'react'
 import Scenario1 from './scenarios/1'
 import './App.css'
 import Scenario2 from './scenarios/2'
@@ -10,7 +9,7 @@ const availableScenarios = [<Scenario1 />, <Scenario2 />, <Scenario3 />, <Scenar
 
 function App() {
 
-	const [currentScenario, setCurrentScenario] = useState(1)
+	const [currentScenario, setCurrentScenario] = useState(0)
 
 	return (
 		<main>

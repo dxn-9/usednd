@@ -34,25 +34,27 @@ const Draggable = () => {
 }
 
 const Droppable = ({ idKey, droppedCount, ...props }: React.HTMLAttributes<HTMLDivElement> & { idKey: number; droppedCount?: number }) => {
-    const { setNode, listeners, over, state } = useDnd(idKey)
+    const { setNode, listeners, over } = useDnd(idKey)
     const randomWidth = useRef(Math.random())
+    console.log(over.direction, idKey)
 
     let overStyle = ''
     if (over.direction?.left) {
-        overStyle = 'border-l-4 border-red'
-    } else if (over.direction?.up) {
-        overStyle = 'border-t-4 border-red'
-    } else if (over.direction?.down) {
-        overStyle = 'border-b-4 border-red'
-    } else if (over.direction?.right) {
-        overStyle = 'border-r-4 border-red'
+        console.log('IS LEFT')
+        overStyle += 'border-l-4 border-red '
+    } if (over.direction?.top) {
+        overStyle += 'border-t-4 border-red '
+    } if (over.direction?.bottom) {
+        overStyle += 'border-b-4 border-red '
+    } if (over.direction?.right) {
+        overStyle += 'border-r-4 border-red '
     }
 
 
 
 
 
-    return <div ref={setNode} {...listeners} className={`bg-red-600/5 ${state.over && 'bg-white'} w-${randomWidth.current > 0.5 ? '24' : '48'} h-24 absolute -translate-x-1/2 -translate-y-1/2 ${overStyle}`} {...props}>Droppable - {idKey} - Dropped: {droppedCount}</div>
+    return <div ref={setNode} {...listeners} className={`bg-red-600/5 ${over.isOver && 'bg-white/20'} w-${randomWidth.current > 0.5 ? '24' : '48'} h-24 absolute -translate-x-1/2 -translate-y-1/2 ${overStyle}`} {...props}>Droppable - {idKey} - Dropped: {droppedCount}</div>
 }
 
 export default Scenario1

@@ -1,5 +1,6 @@
 import { DndProviderProps } from "./DndContext"
 import { DndElement } from "../entities/DndElement"
+import { Collision } from "../utils"
 
 export type UniqueId = string | number
 
@@ -46,11 +47,11 @@ export interface DndContextInt {
     dndProviderProps: DndProviderProps
     elements: Map<UniqueId, DndElement>
     ghostNode: DndElement | null
-    cleanupFunctions: (() => void)[]
+    // cleanupFunctions: (() => void)[]
     // activeElement: DndElement | null
     overElement: DndElement | null
     overStack: DndElement[]
 
-    register: (id: UniqueId, node: HTMLElement, options: { draggable: boolean, droppable: boolean, data?: any, callbacks?: DndElementCallbacks }) => DndElement
+    register: (id: UniqueId, node: HTMLElement, options: { draggable: boolean, droppable: boolean, data?: any, callbacks?: DndElementCallbacks, collisionFilter?: (col: Collision) => boolean }) => DndElement
     unregister: (id: UniqueId) => void
 }
