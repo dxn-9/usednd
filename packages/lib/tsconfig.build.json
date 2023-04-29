@@ -1,0 +1,14 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "sourceMap": false,
+        "outDir": "./build",
+        "declarationMap": false,
+        "inlineSourceMap": false,
+        "inlineSources": false,
+        "skipLibCheck": false,
+        "esModuleInterop": true,
+        "noEmit": false
+    },
+    "exclude": ["./__tests__/**/*"]
+}

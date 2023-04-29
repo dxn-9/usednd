@@ -1,0 +1,24 @@
+{
+    "display": "Default",
+
+    "compilerOptions": {
+        "composite": false,
+        "declaration": true,
+        "declarationMap": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "inlineSources": false,
+        "isolatedModules": true,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "preserveWatchOutput": true,
+        "skipLibCheck": true,
+        "moduleResolution": "node",
+        "strict": true,
+        "jsx": "react",
+        "target": "ES2016",
+        "lib": ["DOM", "DOM.Iterable", "ESNext"],
+        "noEmit": true
+    },
+    "exclude": ["node_modules"]
+}

@@ -1,32 +1,28 @@
-import React from "react";
-import { DndElementRect, UniqueId, } from "../context/ContextTypes";
-import { getElementRect, pow2, todo, CollisionResultSuccess, Collision, createEventOptions } from "../utils";
-import { Context } from "../context/DndContext";
-import { DndElementEvents, DndPointerEvent } from "../options/DndEvents";
-import { Transform } from "../hooks/useDnd";
-import { DndCollision } from "../options/DndCollisions";
-import { Vec2 } from "./Vec2";
-
+import { DndElementRect, UniqueId } from '../context/ContextTypes'
+import { getElementRect, CollisionResultSuccess, Collision, createEventOptions } from '../utils'
+import { Context } from '../context/DndContext'
+import { DndElementEvents, DndPointerEvent } from '../options/DndEvents'
+import { Transform } from '../hooks/useDnd'
+import { Vec2 } from './Vec2'
 
 export interface DndElementOptions {
-    draggable: boolean;
-    droppable: boolean;
+    draggable: boolean
+    droppable: boolean
     callbacks?: Partial<DndElementEvents>
+    // eslint-disable-next-line 
     data?: any
     collisionFilter?: (collision: Collision) => boolean
-
 }
-
 
 export class DndElement {
     id: UniqueId
     node: HTMLElement
-    rect!: DndElementRect;
+    rect!: DndElementRect
     movementDelta: Vec2
     initialPoint: Vec2
     isActive: boolean
     isOver: boolean
-    lastCollision?: CollisionResultSuccess;
+    lastCollision?: CollisionResultSuccess
     transform: Transform
 
     draggable: DndElementOptions['draggable']
@@ -66,10 +62,8 @@ export class DndElement {
         ctx.isOutside = true
 
         this.callbacks?.onDragStart?.(createEventOptions(ev))
-
     }
     public onDragEnd(ev: DndPointerEvent) {
-
         this.callbacks?.onDragEnd?.(createEventOptions(ev))
     }
     public onDragMove(ev: DndPointerEvent) {
@@ -100,15 +94,8 @@ export class DndElement {
         this.isOver = false
         this.lastCollision = undefined
         this.callbacks?.onDragOverLeave?.(createEventOptions(ev))
-
     }
     public onActive(ev: DndPointerEvent) {
         this.callbacks?.onActive?.(createEventOptions(ev))
     }
-
-
-
-
-
-
 }

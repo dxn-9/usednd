@@ -3,7 +3,6 @@ import { DndContext } from '../context/ContextTypes'
 import { DndElement } from '../entities/DndElement'
 import { CollisionResultSuccess } from '../utils'
 
-
 export interface DndEventOptions {
     context: DndContext
     active: DndElement
@@ -13,12 +12,9 @@ export interface DndEventOptions {
 export interface DndDropEventOptions extends DndEventOptions {
     collision: CollisionResultSuccess
     over: DndElement
-
 }
 
 export type DndPointerEvent = React.PointerEvent | PointerEvent
-
-
 
 export interface DndEvents {
     onDragStart(options: DndEventOptions): unknown
@@ -33,7 +29,3 @@ export interface DndEvents {
 export interface DndElementEvents extends DndEvents {
     onActive(options: DndEventOptions): unknown
 }
-
-
-
-

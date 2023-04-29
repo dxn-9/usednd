@@ -1,6 +1,6 @@
-import { DndProviderProps } from "./DndContext"
-import { DndElement, DndElementOptions } from "../entities/DndElement"
-import { Collision } from "../utils"
+import { DndProviderProps } from './DndContext'
+import { DndElement, DndElementOptions } from '../entities/DndElement'
+import { Vec2 } from '../entities/Vec2'
 
 export type UniqueId = string | number
 
@@ -10,11 +10,9 @@ export interface DndEvent extends PointerEvent {
         over: Element
         pointOfContact: [number, number]
     }
-
 }
 
 export interface DndElementRect {
-
     angle: number
     left: number
     top: number
@@ -25,21 +23,13 @@ export interface DndElementRect {
     center: Vec2
 }
 
-export interface DndElementCallbacks {
-
-    onOutsideOver?: (ev: DndEvent) => void
-    /** TODO: */
-    onOutsideOverLeave?: (ev: any) => any
-}
 // export interface Vec2 {
 //     x: number
 //     y: number
 // }
 
-export type DndContext = DndContextInt & ({ isDragging: true; activeElement: DndElement } | { isDragging: false; activeElement: null })
-
-
-
+export type DndContext = DndContextInt &
+    ({ isDragging: true; activeElement: DndElement } | { isDragging: false; activeElement: null })
 
 export interface DndContextInt {
     // isDragging: boolean

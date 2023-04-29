@@ -1,7 +1,4 @@
 {
-	"extends": "tsconfig/lib.json",
-	"include": ["src", "index.tsx", "__tests__"],
-	"compilerOptions": {
-		"target": "ESNext"
-	}
+    "extends": "../../tsconfig.json",
+    "include": ["src", "index.tsx", "__tests__"]
 }

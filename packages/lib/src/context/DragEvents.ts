@@ -1,7 +1,6 @@
-import React from "react"
-import { DndContext, UniqueId } from "./ContextTypes"
-import { Context } from "./DndContext"
-
+import React from 'react'
+import { UniqueId } from './ContextTypes'
+import { Context } from './DndContext'
 
 export function onPointerDown(ev: React.PointerEvent, elementId: UniqueId) {
     ev.stopPropagation()
