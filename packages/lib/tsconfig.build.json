@@ -2,7 +2,7 @@
     "extends": "./tsconfig.json",
     "compilerOptions": {
         "sourceMap": false,
-        "outDir": "./build",
+        "outDir": "../../dist",
         "declarationMap": false,
         "inlineSourceMap": false,
         "inlineSources": false,
