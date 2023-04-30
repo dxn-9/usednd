@@ -15,5 +15,8 @@ jobs:
             - run: pnpm install --no-frozen-lockfile
             - run: pnpm run test
             - run: pnpm run lint
-            - name: debug github context
-              run: echo ${{ toJSON(github) }}
+            - name: 'Get Latest tag'
+              run: |
+                  TAG=$(git tag | tail -1) && echo "latest_tag=$TAG" >> "$GITHUB_ENV"
+            - run: |
+                  echo "${{ env.latest_tag }}"
