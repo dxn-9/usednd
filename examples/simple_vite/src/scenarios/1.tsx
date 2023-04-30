@@ -1,6 +1,6 @@
-import { DndProvider, useDnd } from 'lib'
-import { DndCollision } from 'lib/src/options/DndCollisions'
-import { CSSTransform } from 'lib/src/utils'
+import { DndProvider, useDnd } from '@dandn/usednd/src'
+import { DndCollision } from '@dandn/usednd/src'
+import { CSSTransform } from '@dandn/usednd/src'
 import React, { useMemo, useRef, useState } from 'react'
 
 const Scenario1 = () => {
@@ -89,9 +89,8 @@ const Droppable = ({
         <div
             ref={setNode}
             {...listeners}
-            className={`bg-red-600/5 ${over.isOver && 'bg-white/20'} w-${
-                randomWidth.current > 0.5 ? '24' : '48'
-            } h-24 absolute -translate-x-1/2 -translate-y-1/2 ${overStyle}`}
+            className={`bg-red-600/5 ${over.isOver && 'bg-white/20'} w-${randomWidth.current > 0.5 ? '24' : '48'
+                } h-24 absolute -translate-x-1/2 -translate-y-1/2 ${overStyle}`}
             {...props}
         >
             Droppable - {idKey} - Dropped: {droppedCount}

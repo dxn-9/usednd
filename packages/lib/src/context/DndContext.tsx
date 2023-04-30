@@ -10,7 +10,7 @@ import {
     computeClosestPoint,
     computeIntersectRect,
     createEventOptions,
-} from '../utils'
+} from '../utils/utils'
 import { DndContext } from './ContextTypes'
 import { DndElement } from '../entities/DndElement'
 import { DndEvents } from '../options/DndEvents'

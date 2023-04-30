@@ -19,8 +19,8 @@ importers:
 
   examples/simple_vite:
     dependencies:
-      lib:
-        specifier: workspace:lib
+      '@dandn/usednd':
+        specifier: workspace:usednd
         version: link:../../packages/lib
       react:
         specifier: ^18.2.0

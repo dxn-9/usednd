@@ -1,5 +1,5 @@
-import { DndProvider, useDnd } from 'lib'
-import { CSSTransform } from 'lib/src/utils'
+import { DndProvider, useDnd } from '@dandn/usednd/src'
+import { CSSTransform } from '@dandn/usednd/src'
 import React from 'react'
 const Scenario3 = () => {
     const [position, setPosition] = React.useState({ x: 0, y: 0 })

@@ -1,6 +1,6 @@
-import { DndProvider, useDnd } from 'lib'
-import { UniqueId } from 'lib/src/context/ContextTypes'
-import { CSSTransform } from 'lib/src/utils'
+import { DndProvider, useDnd } from '@dandn/usednd/src'
+import { UniqueId } from '@dandn/usednd/src/'
+import { CSSTransform } from '@dandn/usednd/src/'
 import React, { PropsWithChildren } from 'react'
 const Scenario4 = () => {
     const [belong, setBelongs] = React.useState<UniqueId>(-1)
@@ -51,9 +51,8 @@ function Droppable({ id, children }: PropsWithChildren<{ id: number }>) {
         <div
             ref={setNode}
             {...listeners}
-            className={`bg-gradient-to-r from-indigo-600 to-red-600  border-2 relative border-black w-52 h-52 ${
-                over.isOver && 'border-red-500'
-            } `}
+            className={`bg-gradient-to-r from-indigo-600 to-red-600  border-2 relative border-black w-52 h-52 ${over.isOver && 'border-red-500'
+                } `}
         >
             Droppable
             {children}

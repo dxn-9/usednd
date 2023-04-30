@@ -1,6 +1,6 @@
-import { DndProvider, useDnd, useDndContext } from 'lib'
-import { DndCollision } from 'lib/src/options/DndCollisions'
-import { CSSTransform } from 'lib/src/utils'
+import { DndProvider, useDnd, useDndContext } from '@dandn/usednd/src'
+import { DndCollision } from '@dandn/usednd/src'
+import { CSSTransform } from '@dandn/usednd/src'
 import React, { PropsWithChildren, useEffect, useState } from 'react'
 
 interface Folder {
@@ -240,9 +240,8 @@ const Subfolder = ({
     return (
         <>
             <div
-                className={`w-full h-8 bg-blue-400 flex ${
-                    over.isOver ? 'bg-blue-200' : ''
-                }  flex-col relative  border-blue-500  ${overClasses}`}
+                className={`w-full h-8 bg-blue-400 flex ${over.isOver ? 'bg-blue-200' : ''
+                    }  flex-col relative  border-blue-500  ${overClasses}`}
                 ref={setNode}
                 {...listeners}
                 style={{

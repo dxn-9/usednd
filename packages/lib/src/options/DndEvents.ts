@@ -1,7 +1,7 @@
 import React from 'react'
 import { DndContext } from '../context/ContextTypes'
 import { DndElement } from '../entities/DndElement'
-import { CollisionResultSuccess } from '../utils'
+import { CollisionResultSuccess } from '../utils/utils'
 
 export interface DndEventOptions {
     context: DndContext

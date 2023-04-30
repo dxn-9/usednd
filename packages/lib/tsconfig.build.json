@@ -2,13 +2,15 @@
     "extends": "./tsconfig.json",
     "compilerOptions": {
         "sourceMap": false,
-        "outDir": "../../dist",
+        "outDir": "./dist",
         "declarationMap": false,
         "inlineSourceMap": false,
         "inlineSources": false,
         "skipLibCheck": false,
         "esModuleInterop": true,
-        "noEmit": false
+        "noEmit": false,
+        "incremental": false,
+        "composite": false
     },
-    "exclude": ["./__tests__/**/*"]
+    "exclude": ["node_modules", "__tests__/**"]
 }

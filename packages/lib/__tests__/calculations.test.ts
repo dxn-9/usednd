@@ -1,5 +1,5 @@
 import { describe, expect, assert, it, vi } from 'vitest'
-import { computeClosestPoint, getElementRect, pow2 } from '../src/utils/index'
+import { computeClosestPoint, getElementRect, pow2 } from '../src/utils/utils'
 import { DndContext } from '../src/context/ContextTypes'
 
 it('should caculate the correct rect', () => {

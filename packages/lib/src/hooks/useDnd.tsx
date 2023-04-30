@@ -1,7 +1,7 @@
 import React, { startTransition, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Context } from '../context/DndContext'
 import { UniqueId } from '../context/ContextTypes'
-import { compareObjects, getElementRect } from '../utils'
+import { compareObjects, getElementRect } from '../utils/utils'
 import { onPointerDown } from '../context/DragEvents'
 import { DndElementEvents } from '../options/DndEvents'
 import { DndElement, DndElementOptions } from '../entities/DndElement'
