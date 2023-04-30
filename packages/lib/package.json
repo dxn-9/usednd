@@ -1,6 +1,6 @@
 {
     "name": "@dandn/usednd",
-    "version": "1.0.1-alpha",
+    "version": "1.0.2",
     "description": "",
     "type": "module",
     "main": "dist/index.js",
@@ -13,8 +13,11 @@
     "keywords": [],
     "author": "",
     "license": "MIT",
+    "peerDependencies": {
+        "react": ">=18.2.0"
+    },
     "dependencies": {
-        "react": "^18.2.0"
+        "tslib": "^2.0.0"
     },
     "devDependencies": {
         "@types/react": "^18.0.28",
