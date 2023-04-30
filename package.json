@@ -1,18 +1,19 @@
 {
     "name": "usednd",
-    "version": "1.0.0",
-    "private": true,
+    "version": "1.0.1",
     "workspaces": [
         "apps/*",
         "packages/*"
     ],
     "scripts": {
         "build": "turbo run build",
+        "build:examples": "turbo run build:examples",
         "dev": "turbo run dev --no-daemon",
         "lint": "turbo run lint",
         "test": "pnpm run -F lib test",
         "test:w": "pnpm run -F lib test:w",
-        "format": "prettier --write \"**/*.{ts,tsx,md}\""
+        "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+        "publish": "npm publish -w @dandn/usednd"
     },
     "devDependencies": {
         "eslint": "latest",

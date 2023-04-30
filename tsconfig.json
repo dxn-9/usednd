@@ -2,15 +2,12 @@
     "display": "Default",
 
     "compilerOptions": {
-        "composite": false,
+        "composite": true,
         "declaration": true,
         "declarationMap": true,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
         "inlineSources": false,
-        "isolatedModules": true,
-        "noUnusedLocals": false,
-        "noUnusedParameters": false,
         "preserveWatchOutput": true,
         "skipLibCheck": true,
         "moduleResolution": "node",

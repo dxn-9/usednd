@@ -1,5 +1,5 @@
 import { DndElementRect, UniqueId } from '../context/ContextTypes'
-import { getElementRect, CollisionResultSuccess, Collision, createEventOptions } from '../utils'
+import { getElementRect, CollisionResultSuccess, Collision, createEventOptions } from '../utils/utils'
 import { Context } from '../context/DndContext'
 import { DndElementEvents, DndPointerEvent } from '../options/DndEvents'
 import { Transform } from '../hooks/useDnd'

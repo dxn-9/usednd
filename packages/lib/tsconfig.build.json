@@ -1,14 +1,16 @@
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
-        "sourceMap": false,
-        "outDir": "../../dist",
+        "sourceMap": true,
+        "outDir": "./dist",
         "declarationMap": false,
-        "inlineSourceMap": false,
-        "inlineSources": false,
-        "skipLibCheck": false,
+        "declaration": true,
         "esModuleInterop": true,
-        "noEmit": false
+        "composite": false,
+        "noEmit": false,
+        "importHelpers": true,
+        "moduleResolution": "node",
+        "incremental": false
     },
-    "exclude": ["./__tests__/**/*"]
+    "exclude": ["./__tests__/**"]
 }
