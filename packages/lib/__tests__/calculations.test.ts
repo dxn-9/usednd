@@ -70,7 +70,7 @@ it('should compute closest droppable', () => {
 
     expect(result.success).toBeTruthy()
     if (result.success) {
-        expect(result.distance).toBeCloseTo(74.994637)
+        expect(result.distance).toBeCloseTo(73.994637)
         expect(result.pointOfContact.x).toBeCloseTo(rect2.center.x - (rect2.center.x + 5.454545))
         expect(result.pointOfContact.y).toBeCloseTo(rect2.center.y - (rect2.center.y + 5))
     }

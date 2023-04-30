@@ -15,3 +15,9 @@ jobs:
 
             - run: pnpm install --no-frozen-lockfile
             - run: pnpm run test
+            - if: ${{ failure() }}
+              name: Test failed
+
+            - run: pnpm run lint
+            - name: debug github context
+              run: echo ${{ toJSON(github) }}
