@@ -64,8 +64,6 @@ export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({
             overElement: null,
             activeElement: null,
             register: (id, node, options) => {
-                console.log('registering', id, options)
-
                 const element: DndElement = new DndElement(id, node, options)
                 context.elements?.set(id, element)
                 node.style.touchAction = 'manipulation'

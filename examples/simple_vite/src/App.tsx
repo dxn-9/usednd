@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import Scenario1 from './scenarios/1'
 import './App.css'
 import Scenario2 from './scenarios/2'
@@ -13,7 +13,7 @@ function App() {
     return (
         <main>
             <div style={{ position: 'absolute', top: '0', left: '0' }}>
-                {availableScenarios.map((scen, i) => (
+                {availableScenarios.map((_, i) => (
                     <button onClick={setCurrentScenario.bind(null, i)} key={i}>
                         {i}
                     </button>

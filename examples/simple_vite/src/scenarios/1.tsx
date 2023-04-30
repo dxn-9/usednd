@@ -1,7 +1,7 @@
-import { DndProvider, useDnd } from '@dandn/usednd/src'
-import { DndCollision } from '@dandn/usednd/src'
-import { CSSTransform } from '@dandn/usednd/src'
-import React, { useMemo, useRef, useState } from 'react'
+import { DndProvider, useDnd } from '@dandn/usednd/src/'
+import { DndCollision } from '@dandn/usednd/src/'
+import { CSSTransform } from '@dandn/usednd/src/'
+import React, { useRef, useState } from 'react'
 
 const Scenario1 = () => {
     const boxesCount = 10
@@ -9,7 +9,6 @@ const Scenario1 = () => {
         ...Array.from({ length: boxesCount }, () => 0),
     })
 
-    console.log(droppedMap)
     return (
         <DndProvider
             debug={true}
@@ -66,13 +65,11 @@ const Droppable = ({
     idKey: number
     droppedCount?: number
 }) => {
-    const { setNode, listeners, over } = useDnd(idKey)
+    const { setNode, listeners, over } = useDnd(idKey, { draggable: false, droppable: true })
     const randomWidth = useRef(Math.random())
-    console.log(over.direction, idKey)
 
     let overStyle = ''
     if (over.direction?.left) {
-        console.log('IS LEFT')
         overStyle += 'border-l-4 border-red '
     }
     if (over.direction?.top) {

@@ -1,10 +1,9 @@
 import { DndProvider, useDnd } from '@dandn/usednd/src'
-import { UniqueId } from '@dandn/usednd/src/'
-import { CSSTransform } from '@dandn/usednd/src/'
+import { UniqueId } from '@dandn/usednd/src'
+import { CSSTransform } from '@dandn/usednd/src'
 import React, { PropsWithChildren } from 'react'
 const Scenario4 = () => {
     const [belong, setBelongs] = React.useState<UniqueId>(-1)
-    console.log('belong ', belong)
 
     return (
         <DndProvider

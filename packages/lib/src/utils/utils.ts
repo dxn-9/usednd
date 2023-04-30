@@ -159,7 +159,6 @@ export function computeClosestPoint(ev: DndPointerEvent, context: DndContext): C
             }
         }
     }
-    console.log('closest elem', element)
 
     if (element === null) return { success: false }
     return {

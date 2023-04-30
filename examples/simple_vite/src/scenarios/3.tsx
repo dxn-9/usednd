@@ -4,7 +4,6 @@ import React from 'react'
 const Scenario3 = () => {
     const [position, setPosition] = React.useState({ x: 0, y: 0 })
 
-    console.log('scenario 3 render', position)
     return (
         <div className="w-screen flex justify-center items-center">
             <DndProvider

@@ -4,6 +4,7 @@
     "description": "",
     "type": "module",
     "main": "dist/index.js",
+    "private": false,
     "typings": "dist/index.d.ts",
     "scripts": {
         "lint": "eslint \"**/*.ts*\" --fix",

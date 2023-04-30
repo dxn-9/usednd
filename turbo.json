@@ -5,6 +5,9 @@
         "build": {
             "cache": false
         },
+        "build:examples": {
+            "cache": false
+        },
         "lint": {
             "outputs": [],
             "cache": false

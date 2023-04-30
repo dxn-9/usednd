@@ -1,7 +1,7 @@
-import { DndProvider, useDnd, useDndContext } from '@dandn/usednd/src'
+import { DndProvider, useDnd } from '@dandn/usednd/src'
 import { DndCollision } from '@dandn/usednd/src'
 import { CSSTransform } from '@dandn/usednd/src'
-import React, { PropsWithChildren, useEffect, useState } from 'react'
+import { PropsWithChildren, useState } from 'react'
 
 interface Folder {
     id: string
@@ -77,10 +77,9 @@ const Scenario2 = () => {
                 onDrop={(ev) => {
                     const o_data = ev.over?.data
                     const a_data = ev.active?.data
-                    let o_isFolder = o_data.order?.length === 1
-                    let a_isFolder = a_data.order?.length === 1
+                    const o_isFolder = o_data.order?.length === 1
+                    const a_isFolder = a_data.order?.length === 1
 
-                    console.log(a_isFolder, o_isFolder, ev)
 
                     if (o_isFolder && a_isFolder) {
                         // folder on folder
@@ -89,11 +88,11 @@ const Scenario2 = () => {
                             const a_folderI = a_data.order[0]
                             const o_folderI = o_data.order[0]
                             const direction = ev.over?.lastCollision?.pointOfContact?.toDirection()
-                            let modifier = direction?.bottom ? 1 : 0
+                            const modifier = direction?.bottom ? 1 : 0
                             const activeFolder = copy[a_folderI]
 
                             let previousFold = activeFolder
-                            let arrLen = copy.length
+                            const arrLen = copy.length
 
                             for (let i = o_folderI + modifier; i <= arrLen; i++) {
                                 const temp = copy[i]
@@ -128,7 +127,6 @@ const Scenario2 = () => {
                             const a_folder = a_data.order[0]
                             const a_subfolder = a_data.order[1]
 
-                            const droppedOn = copy[o_folder].subfolders?.[o_subfolder] as Folder
                             const activeFolder = copy[a_folder].subfolders?.[a_subfolder] as Folder
                             const direction = ev.over?.lastCollision?.pointOfContact?.toDirection()
                             let modifier = direction?.bottom ? 1 : 0
@@ -159,7 +157,7 @@ const Scenario2 = () => {
     )
 }
 
-const ParentFolder = ({ children, folder, index }: PropsWithChildren<{ folder: Folder; index: number }>) => {
+const ParentFolder = ({ folder, index }: PropsWithChildren<{ folder: Folder; index: number }>) => {
     const { setNode, over, listeners, transform } = useDnd(`folder-${folder.id}`, {
         draggable: true,
         droppable: true,
@@ -205,7 +203,6 @@ const ParentFolder = ({ children, folder, index }: PropsWithChildren<{ folder: F
 }
 
 const Subfolder = ({
-    children,
     folder,
     parentIndex,
     index,
@@ -217,11 +214,6 @@ const Subfolder = ({
     const { setNode, listeners, transform, over } = useDnd(`subfolder-${folder.id}`, {
         draggable: true,
         droppable: true,
-        callbacks: {
-            onDragStart: (op) => {
-                // op.active.node.parentElement!.style.zIndex = '9999'
-            },
-        },
         data: {
             order: [parentIndex, index],
             folder: folder,
