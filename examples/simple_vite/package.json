@@ -5,7 +5,8 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "build:examples": "vite build"
     },
     "dependencies": {
         "@dandn/usednd": "workspace:usednd",

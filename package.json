@@ -7,6 +7,7 @@
     ],
     "scripts": {
         "build": "turbo run build",
+        "build:examples": "turbo run build:examples",
         "dev": "turbo run dev --no-daemon",
         "lint": "turbo run lint",
         "test": "pnpm run -F lib test",
