@@ -12,7 +12,8 @@
         "lint": "turbo run lint",
         "test": "pnpm run -F lib test",
         "test:w": "pnpm run -F lib test:w",
-        "format": "prettier --write \"**/*.{ts,tsx,md}\""
+        "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+        "publish": "npm publish -w @dandn/usednd"
     },
     "devDependencies": {
         "eslint": "latest",

@@ -1,9 +1,10 @@
 {
     "name": "@dandn/usednd",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "",
     "type": "module",
     "main": "dist/index.js",
+    "typings": "dist/index.d.ts",
     "scripts": {
         "lint": "eslint \"**/*.ts*\" --fix",
         "test": "vitest run",

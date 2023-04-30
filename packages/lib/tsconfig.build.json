@@ -3,12 +3,14 @@
     "compilerOptions": {
         "sourceMap": true,
         "outDir": "./dist",
-        "declarationMap": true,
+        "declarationMap": false,
         "declaration": true,
         "esModuleInterop": true,
+        "composite": false,
         "noEmit": false,
         "importHelpers": true,
-        "moduleResolution": "node"
+        "moduleResolution": "node",
+        "incremental": false
     },
-    "exclude": ["node_modules", "__tests__/**"]
+    "exclude": ["./__tests__/**"]
 }
