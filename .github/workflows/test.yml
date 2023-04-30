@@ -12,12 +12,8 @@ jobs:
             - uses: actions/setup-node@v3
               with:
                   node-version: '18'
-
             - run: pnpm install --no-frozen-lockfile
             - run: pnpm run test
-            - if: ${{ failure() }}
-              name: Test failed
-
             - run: pnpm run lint
             - name: debug github context
               run: echo ${{ toJSON(github) }}
