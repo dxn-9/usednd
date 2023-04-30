@@ -1,7 +1,5 @@
 {
-    "name": "usednd",
-    "version": "1.0.0",
-    "private": true,
+    "name": "@dandn/usednd",
     "workspaces": [
         "apps/*",
         "packages/*"
