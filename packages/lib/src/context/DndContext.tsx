@@ -66,7 +66,6 @@ export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({
             register: (id, node, options) => {
                 const element: DndElement = new DndElement(id, node, options)
                 context.elements?.set(id, element)
-                node.style.userSelect = 'none'
                 return element
             },
             unregister: (id) => {
@@ -94,18 +93,16 @@ export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({
 
             context.overElement?.onDragOverLeave?.(ev)
 
-                /** Cleanup */
-                ; (context.isDragging as boolean) = false
+            /** Cleanup */
             context.activeElement.movementDelta.x = 0
             context.activeElement.movementDelta.y = 0
-            context.activeElement.isActive = false
-                ; (context.isDragging as boolean) = false
-                ; (context.activeElement as DndElement | null) = null
+            context.activeElement.isActive = false;
+            (context.isDragging as boolean) = false;
+            (context.activeElement as DndElement | null) = null
         }
         function pointerMove(ev: PointerEvent) {
             if (!context.isDragging) return
             ev.preventDefault()
-            // console.log('is dragging', context.activeElement)
             // if its dragging and its not inside a droppable element
             let collision: CollisionResult | null = null
 

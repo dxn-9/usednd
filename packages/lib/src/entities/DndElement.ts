@@ -9,7 +9,7 @@ export interface DndElementOptions {
     draggable: boolean
     droppable: boolean
     callbacks?: Partial<DndElementEvents>
-    // eslint-disable-next-line 
+    // eslint-disable-next-line
     data?: any
     collisionFilter?: (collision: Collision) => boolean
 }
@@ -48,6 +48,7 @@ export class DndElement {
         if (options.draggable) {
             this.node.style.userSelect = 'none'
             this.node.style.touchAction = 'none'
+            this.node.style.cursor = 'grab'
         }
 
         this.updateRect()
@@ -67,8 +68,10 @@ export class DndElement {
         ctx.isOutside = true
 
         this.callbacks?.onDragStart?.(createEventOptions(ev))
+        this.node.style.cursor = 'grabbing'
     }
     public onDragEnd(ev: DndPointerEvent) {
+        this.node.style.cursor = 'grab'
         this.callbacks?.onDragEnd?.(createEventOptions(ev))
     }
     public onDragMove(ev: DndPointerEvent) {
