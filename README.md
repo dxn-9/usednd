@@ -1,6 +1,6 @@
 # useDnd
 
-<a href="https://www.npmjs.com/package/@dandn/usednd"><img src="https://img.shields.io/npm/v/@dandn/usednd.svg" alt="Stable Release" /></a>
+<a href="https://www.npmjs.com/package/@dandn/usednd" target="_blank"><img src="https://img.shields.io/npm/v/@dandn/usednd.svg" alt="Stable Release" /></a>
 
 ## 👆 A simple Drag & Drop library for React
 
@@ -19,4 +19,4 @@
 
 ### Checkout the examples for usage!
 
-https://usedndexamples.vercel.app/
+<a href="https://usednd.vercel.app" target="_blank">Examples</a>
