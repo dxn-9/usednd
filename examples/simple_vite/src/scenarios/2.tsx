@@ -67,7 +67,7 @@ const mockData: Folder[] = [
     },
 ]
 
-const Scenario2 = () => {
+const Scenario = () => {
     const [folderState, setFolderState] = useState<Folder[]>(mockData)
 
     return (
@@ -79,7 +79,6 @@ const Scenario2 = () => {
                     const a_data = ev.active?.data
                     const o_isFolder = o_data.order?.length === 1
                     const a_isFolder = a_data.order?.length === 1
-
 
                     if (o_isFolder && a_isFolder) {
                         // folder on folder
@@ -250,4 +249,4 @@ const Subfolder = ({
     )
 }
 
-export default Scenario2
+export default Scenario

@@ -1,46 +1,63 @@
 import { DndProvider, useDnd } from '@dandn/usednd'
+import { UniqueId } from '@dandn/usednd'
 import { CSSTransform } from '@dandn/usednd'
-import React from 'react'
-const Scenario3 = () => {
-    const [position, setPosition] = React.useState({ x: 0, y: 0 })
+
+import React, { PropsWithChildren } from 'react'
+const Scenario = () => {
+    const [belong, setBelongs] = React.useState<UniqueId>(-1)
 
     return (
-        <div className="w-screen flex justify-center items-center">
-            <DndProvider
-                onDragEnd={(options) => {
-                    setPosition((prev) => {
-                        return {
-                            x: prev.x + options.active.movementDelta.x,
-                            y: prev.y + options.active.movementDelta.y,
-                        }
-                    })
-                }}
-            >
-                <SimpleDraggable position={position} />
-            </DndProvider>
-        </div>
+        <DndProvider
+            onDragEnd={(op) => {
+                setBelongs(op.over?.id ?? -1)
+            }}
+        >
+            <div className="flex items-center justify-center">
+                <div className="w-28">{belong === -1 && <Draggable />}</div>
+                <div className="grid-cols-2 grid ml-52 gap-3">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <Droppable id={i} key={i}>
+                            {belong === i && <Draggable />}
+                        </Droppable>
+                    ))}
+                </div>
+            </div>
+        </DndProvider>
     )
 }
-
-function SimpleDraggable({ position }: { position: { x: number; y: number } }) {
-    const { setNode, listeners, transform, active } = useDnd(1, {
+function Draggable() {
+    const { setNode, listeners, transform } = useDnd(`draggable`, {
         draggable: true,
         droppable: false,
     })
     return (
         <div
-            className={`w-28 h-12 rounded bg-slate-900 text-center relative ${active && 'border-2 border-red-500'}`}
-            style={{
-                top: position.y,
-                left: position.x,
-                transform: CSSTransform(transform),
-            }}
             ref={setNode}
+            className="bg-slate-600 rounded-md  h-12 w-20 z-10 relative"
             {...listeners}
+            style={{ transform: CSSTransform(transform) }}
         >
             Draggable
         </div>
     )
 }
 
-export default Scenario3
+function Droppable({ id, children }: PropsWithChildren<{ id: number }>) {
+    const { setNode, listeners, over } = useDnd(id, {
+        draggable: false,
+        droppable: true,
+    })
+    return (
+        <div
+            ref={setNode}
+            {...listeners}
+            className={`bg-gradient-to-r from-indigo-600 to-red-600  border-2 relative border-black w-52 h-52 ${over.isOver && 'border-red-500'
+                } `}
+        >
+            Droppable
+            {children}
+        </div>
+    )
+}
+
+export default Scenario

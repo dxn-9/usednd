@@ -83,7 +83,7 @@ export const useDnd = (
                 callbacks?.onDragStart?.(o)
             },
             onDragEnd: (o) => {
-                if (nodeRef.current) nodeRef.current.style.zIndex = '0'
+                if (nodeRef.current) nodeRef.current.style.zIndex = ""
                 startTransition(() => {
                     setActive(false)
                     setTransform({ x: 0, y: 0, z: 0, scale: 1 })
