@@ -66,7 +66,6 @@ export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({
             register: (id, node, options) => {
                 const element: DndElement = new DndElement(id, node, options)
                 context.elements?.set(id, element)
-                node.style.touchAction = 'manipulation'
                 node.style.userSelect = 'none'
                 return element
             },
@@ -105,6 +104,7 @@ export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({
         }
         function pointerMove(ev: PointerEvent) {
             if (!context.isDragging) return
+            ev.preventDefault()
             // console.log('is dragging', context.activeElement)
             // if its dragging and its not inside a droppable element
             let collision: CollisionResult | null = null

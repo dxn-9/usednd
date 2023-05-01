@@ -10,13 +10,14 @@
         "lint": "eslint \"**/*.ts*\" --fix",
         "test": "vitest run",
         "test:w": "vitest --watch",
-        "build": "tsc -p tsconfig.build.json"
+        "build": "tsc -p tsconfig.build.json",
+        "dev": "tsc --watch -p tsconfig.build.json"
     },
     "keywords": [],
     "author": "",
     "license": "MIT",
     "peerDependencies": {
-        "react": ">=18.2.0"
+        "react": ">=17.2.0"
     },
     "dependencies": {
         "tslib": "^2.0.0"

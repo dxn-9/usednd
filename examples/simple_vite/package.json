@@ -1,21 +1,21 @@
 {
-    "name": "testapp",
+    "name": "simple_vite",
     "private": true,
     "version": "0.0.0",
     "type": "module",
     "scripts": {
         "dev": "vite",
         "preview": "vite preview",
-        "build:examples": "tsc -p ./tsconfig.json --noEmit && vite build"
+        "build:examples": "tsc -p ./tsconfig.json && vite build --force"
     },
     "dependencies": {
-        "@dandn/usednd": "workspace:*",
         "react": "^18.2.0",
-        "react-dom": "^18.2.0"
+        "react-dom": "^18.2.0",
+        "@dandn/usednd": "workspace:*"
     },
     "devDependencies": {
-        "@types/react": "^18.0.28",
-        "@types/react-dom": "^18.0.11",
+        "@types/react": "^18.2.0",
+        "@types/react-dom": "^18.2.1",
         "@vitejs/plugin-react-swc": "^3.0.0",
         "autoprefixer": "^10.4.14",
         "postcss": "^8.4.21",

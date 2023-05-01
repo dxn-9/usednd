@@ -45,6 +45,11 @@ export class DndElement {
         this.isOver = false
         this.transform = { x: 0, y: 0, z: 0, scale: 1 }
 
+        if (options.draggable) {
+            this.node.style.userSelect = 'none'
+            this.node.style.touchAction = 'none'
+        }
+
         this.updateRect()
     }
 

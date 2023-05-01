@@ -1,6 +1,4 @@
 {
-    "display": "Default",
-
     "compilerOptions": {
         "composite": true,
         "declaration": true,
@@ -12,7 +10,7 @@
         "skipLibCheck": true,
         "moduleResolution": "node",
         "strict": true,
-        "jsx": "react",
+        "jsx": "react-jsx",
         "target": "ES2016",
         "lib": ["DOM", "DOM.Iterable", "ESNext"],
         "noEmit": true

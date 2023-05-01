@@ -70,7 +70,6 @@ export const useDnd = (
     const setNode = (node: HTMLElement | null) => {
         nodeRef.current = node // this is to make ts happy
     }
-    // console.log('TRANSFORM', id, transform)
 
     const cbs: Partial<DndElementEvents> = useMemo(
         () => ({
