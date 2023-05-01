@@ -1,6 +1,6 @@
 {
     "name": "@dandn/usednd",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "description": "",
     "type": "module",
     "main": "dist/index.js",
@@ -10,13 +10,14 @@
         "lint": "eslint \"**/*.ts*\" --fix",
         "test": "vitest run",
         "test:w": "vitest --watch",
-        "build": "tsc -p tsconfig.build.json"
+        "build": "tsc -p tsconfig.build.json",
+        "dev": "tsc --watch -p tsconfig.build.json"
     },
     "keywords": [],
     "author": "",
     "license": "MIT",
     "peerDependencies": {
-        "react": ">=18.2.0"
+        "react": ">=17.2.0"
     },
     "dependencies": {
         "tslib": "^2.0.0"

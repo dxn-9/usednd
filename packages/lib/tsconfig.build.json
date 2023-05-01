@@ -10,7 +10,8 @@
         "noEmit": false,
         "importHelpers": true,
         "moduleResolution": "node",
-        "incremental": false
+        "incremental": false,
+        "jsx": "react-jsx"
     },
     "exclude": ["./__tests__/**"]
 }

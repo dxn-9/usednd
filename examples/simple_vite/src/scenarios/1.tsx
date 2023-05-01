@@ -1,6 +1,6 @@
-import { DndProvider, useDnd } from '@dandn/usednd/src/'
-import { DndCollision } from '@dandn/usednd/src/'
-import { CSSTransform } from '@dandn/usednd/src/'
+import { DndProvider, useDnd } from '@dandn/usednd'
+import { DndCollision } from '@dandn/usednd'
+import { CSSTransform } from '@dandn/usednd'
 import React, { useRef, useState } from 'react'
 
 const Scenario1 = () => {
