@@ -109,6 +109,7 @@ export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({
             if (collisionDetection === DndCollision.ClosestPoint) {
                 collision = computeClosestPoint(ev, context)
                 if (!collision.success || collision.distance > outsideThreshold) {
+                    context.overElement?.onDragOverLeave?.(ev)
                     context.overElement = null
                 } else {
                     if (debug) {
@@ -133,6 +134,7 @@ export const DndProvider: React.FC<PropsWithChildren<DndProviderProps>> = ({
                 collision = computeIntersectRect(context)
 
                 if (!collision.success) {
+                    context.overElement?.onDragOverLeave?.(ev)
                     context.overElement = null
                 } else {
                     // console.log('RESULT', collision)
