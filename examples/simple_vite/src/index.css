@@ -11,6 +11,8 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
+    color: rgba(255, 255, 255, 0.87);
+    background-color: #242424;
 }
 
 a {
@@ -28,8 +30,6 @@ body {
     place-items: center;
     min-width: 320px;
     min-height: 100vh;
-    color: rgba(255, 255, 255, 0.87);
-    background-color: #242424;
 }
 
 h1 {
@@ -54,17 +54,4 @@ button:hover {
 button:focus,
 button:focus-visible {
     outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-    :root {
-        color: #213547;
-        background-color: #ffffff;
-    }
-    a:hover {
-        color: #747bff;
-    }
-    button {
-        background-color: #f9f9f9;
-    }
 }
