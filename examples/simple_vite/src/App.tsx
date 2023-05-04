@@ -12,7 +12,7 @@ function App() {
 
     return (
         <main>
-            <div style={{ position: 'absolute', top: '0', left: '0' }}>
+            <div style={{ position: 'absolute', top: '0', left: '0', zIndex: 9999 }}>
                 {availableScenarios.map((_, i) => (
                     <button onClick={setCurrentScenario.bind(null, i)} key={i}>
                         {i}
