@@ -12,7 +12,8 @@ function App() {
 
     return (
         <main className="h-screen w-screen overflow-hidden flex justify-center items-center">
-            <div style={{ position: 'absolute', top: '0', left: '0', zIndex: 9999 }}>
+
+<div style={{ position: 'absolute', top: '0', left: '0', zIndex: 9999 }}>
                 {availableScenarios.map((_, i) => (
                     <button onClick={setCurrentScenario.bind(null, i)} key={i}>
                         {i}
