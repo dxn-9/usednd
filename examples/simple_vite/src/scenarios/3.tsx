@@ -14,7 +14,7 @@ const Scenario = () => {
         >
             <div className="flex items-center justify-center">
                 <div className="w-28">{belong === -1 && <Draggable />}</div>
-                <div className="grid-cols-2 grid ml-52 gap-3">
+                <div className="grid-cols-2 grid md:ml-52 gap-3">
                     {Array.from({ length: 3 }).map((_, i) => (
                         <Droppable id={i} key={i}>
                             {belong === i && <Draggable />}
@@ -51,8 +51,9 @@ function Droppable({ id, children }: PropsWithChildren<{ id: number }>) {
         <div
             ref={setNode}
             {...listeners}
-            className={`bg-gradient-to-r from-indigo-600 to-red-600  border-2 relative border-black w-52 h-52 ${over.isOver && 'border-red-500'
-                } `}
+            className={`bg-gradient-to-r from-indigo-600 to-red-600  border-2 relative border-black  md:w-52 md:h-52 h-28 w-28 ${
+                over.isOver && 'border-red-500'
+            } `}
         >
             Droppable
             {children}

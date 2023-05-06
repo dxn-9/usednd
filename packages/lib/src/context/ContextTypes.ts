@@ -1,6 +1,9 @@
 import { DndProviderProps } from './DndContext'
 import { DndElement, DndElementOptions } from '../entities/DndElement'
 import { Vec2 } from '../entities/Vec2'
+import { Defined } from '../utils/types'
+import { DndCollision } from '../options/DndCollisions'
+import { CollisionResultSuccess } from '../utils/utils'
 
 export type UniqueId = string | number
 
@@ -34,12 +37,13 @@ export type DndContext = DndContextInt &
 export interface DndContextInt {
     // isDragging: boolean
     isOutside: boolean
-    dndProviderProps: DndProviderProps
+    dndProviderProps: Defined<DndProviderProps, "outsideThreshold">
     elements: Map<UniqueId, DndElement>
     ghostNode: DndElement | null
     // cleanupFunctions: (() => void)[]
     // activeElement: DndElement | null
     overElement: DndElement | null
+    lastCollision: CollisionResultSuccess | null
 
     register: (id: UniqueId, node: HTMLElement, options: DndElementOptions) => DndElement
     unregister: (id: UniqueId) => void

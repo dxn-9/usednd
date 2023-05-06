@@ -1,7 +1,7 @@
 import { DndElementRect, DndContext } from '../context/ContextTypes'
 import { Transform } from '../hooks/useDnd'
 import { DndElement } from '../entities/DndElement'
-import { DndDropEventOptions, DndEventOptions, DndPointerEvent } from '../options/DndEvents'
+import { DndEventOptions, DndPointerEvent } from '../options/DndEvents'
 import { Context } from '../context/DndContext'
 import { Vec2 } from '../entities/Vec2'
 
@@ -9,12 +9,14 @@ export type CollisionResult = { success: false } | CollisionResultSuccess
 export interface CollisionResultSuccess extends Collision {
     pointOfContact: Vec2
     element: DndElement
+    active: DndElement
     distance: number
     success: true
 }
 
 export interface Collision {
     element: DndElement
+    active: DndElement
     distance: number
     pointOfContact: Vec2
 }
@@ -77,6 +79,7 @@ export function computeIntersectRect(context: DndContext): CollisionResult {
             // we want in this case the element with the biggest intersection
             const result: Collision = {
                 pointOfContact: localPointOfContact,
+                active,
                 distance: areaRatio,
                 element: target,
             }
@@ -91,7 +94,7 @@ export function computeIntersectRect(context: DndContext): CollisionResult {
     }
     if (!element) return { success: false }
 
-    return { element, distance, pointOfContact, success: true }
+    return { element, distance, pointOfContact, success: true, active }
 }
 
 export function computeClosestCenter() {
@@ -138,15 +141,19 @@ export function computeClosestPoint(ev: DndPointerEvent, context: DndContext): C
         }
 
         const l_distance = distanceToCenter - dist
+
         const localPointOfContact = new Vec2(
             target.rect.center.x - (target.rect.center.x + (ev.pageX > target.rect.center.x ? -x : +x)),
             target.rect.center.y - (target.rect.center.y + (ev.pageY > target.rect.center.y ? -y : +y))
         )
 
+        console.log('LOCAL OF', target.id, localPointOfContact)
+
         if (l_distance < distance) {
             const result: Collision = {
                 pointOfContact: localPointOfContact,
                 distance: l_distance,
+                active,
                 element: target,
             }
             const isAllowed = active.collisionFilter ? active.collisionFilter(result) : true
@@ -154,6 +161,7 @@ export function computeClosestPoint(ev: DndPointerEvent, context: DndContext): C
             if (isAllowed) {
                 pointOfContact.x = localPointOfContact.x
                 pointOfContact.y = localPointOfContact.y
+
                 distance = l_distance
                 element = target
             }
@@ -165,6 +173,7 @@ export function computeClosestPoint(ev: DndPointerEvent, context: DndContext): C
         element,
         distance,
         pointOfContact,
+        active,
         success: true,
     }
 }
@@ -220,9 +229,7 @@ export function pow2(num: number) {
     return Math.pow(num, 2)
 }
 
-export function createEventOptions(ev: DndPointerEvent): DndEventOptions
-export function createEventOptions(ev: DndPointerEvent, collision: CollisionResultSuccess): DndDropEventOptions
-export function createEventOptions(ev: DndPointerEvent, collision?: CollisionResultSuccess): unknown {
+export function createEventOptions(ev: DndPointerEvent): DndEventOptions {
     const ctx = Context.getState()
     if (!ctx.activeElement) throw new Error('No active element')
     return {
@@ -230,7 +237,7 @@ export function createEventOptions(ev: DndPointerEvent, collision?: CollisionRes
         active: ctx.activeElement,
         over: ctx.overElement,
         event: ev,
-        collision,
+        collision: ctx.lastCollision,
     }
     // distinct the target type based on the event  - if draggable event or droppable event
     // return { context: ctx, active: ctx.activeElement, event: ev, over: ctx.overElement, }
