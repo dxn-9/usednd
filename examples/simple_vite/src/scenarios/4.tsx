@@ -11,10 +11,6 @@ const Scenario = () => {
 
     const [debugLine, setDebugLine] = useState({ x1: 0, y1: 0, x2: 0, y2: 0 })
 
-    // useEffect(() => {
-    //     rand.current = Math.random()
-    // },[droppedMap])
-
     return (
         <DndProvider
             outsideThreshold={10000}
@@ -92,7 +88,6 @@ const Droppable = ({
     droppedCount?: number
 }) => {
     const { setNode, listeners, over } = useDnd(idKey, { draggable: false, droppable: true })
-    const randomWidth = useRef(Math.random())
 
     let overStyle = ''
     if (over.direction?.left) {
