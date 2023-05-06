@@ -9,7 +9,6 @@ const Scenario = () => {
         Array.from({ length: boxesCount }, () => ({ x: Math.random() - 0.5, y: Math.random() - 0.5, count: 0 }))
     )
 
-    console.log('DROPED MAP', droppedMap, Object.keys(droppedMap))
     const [debugLine, setDebugLine] = useState({ x1: 0, y1: 0, x2: 0, y2: 0 })
 
     // useEffect(() => {
@@ -31,11 +30,10 @@ const Scenario = () => {
                 })
             }}
             onDragMove={(options) => {
-                console.log(options)
                 if (options.collision?.pointOfContact && options.over) {
                     const newLine = {
-                        x1: options.event.clientX,
-                        y1: options.event.clientY,
+                        x1: options.event.pageX,
+                        y1: options.event.pageY,
                         x2: options.collision.pointOfContact.x + options.collision.element.rect.center.x,
                         y2: options.collision.pointOfContact.y + options.collision.element.rect.center.y,
                     }
@@ -43,23 +41,27 @@ const Scenario = () => {
                 }
             }}
         >
-            <svg viewBox={`0 0 ${window.innerWidth} ${window.innerHeight}`}>
-                <line x1={debugLine.x1} x2={debugLine.x2} y1={debugLine.y1} y2={debugLine.y2} stroke="red" />
-            </svg>
-            <div className="w-screen h-screen overflow-hidden ">
+            <div className="w-full h-full">
+                <svg className="absolute w-full h-full">
+                    <line x1={debugLine.x1} x2={debugLine.x2} y1={debugLine.y1} y2={debugLine.y2} stroke="red" />
+                </svg>
+
                 <Draggable />
-                <div className="w-0 h-0 absolute left-1/2 top-1/2 ">
-                    {droppedMap.map((e, i) => (
-                        <Droppable
-                            key={i}
-                            style={{
-                                left: e.x * 800,
-                                top: e.y * 800,
-                            }}
-                            idKey={i}
-                            droppedCount={e.count}
-                        />
-                    ))}
+
+                <div className="absolute w-full h-full overflow-hidden">
+                    <div className="absolute w-0 h-0 left-1/2 top-1/2  ">
+                        {droppedMap.map((e, i) => (
+                            <Droppable
+                                key={i}
+                                style={{
+                                    left: e.x * 800,
+                                    top: e.y * 800,
+                                }}
+                                idKey={i}
+                                droppedCount={e.count}
+                            />
+                        ))}
+                    </div>
                 </div>
             </div>
         </DndProvider>
