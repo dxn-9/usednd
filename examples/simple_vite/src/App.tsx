@@ -8,7 +8,7 @@ import Scenario4 from './scenarios/4'
 const availableScenarios = [<Scenario1 />, <Scenario2 />, <Scenario3 />, <Scenario4 />]
 
 function App() {
-    const [currentScenario, setCurrentScenario] = useState(0)
+    const [currentScenario, setCurrentScenario] = useState(3)
 
     return (
         <main>

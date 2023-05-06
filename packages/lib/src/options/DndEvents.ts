@@ -8,11 +8,12 @@ export interface DndEventOptions {
     active: DndElement
     over: DndElement | null
     event: DndPointerEvent
+    collision: CollisionResultSuccess | null
 }
-export interface DndDropEventOptions extends DndEventOptions {
-    collision: CollisionResultSuccess
-    over: DndElement
-}
+// export interface DndEventOptions extends DndEventOptions {
+//     collision: CollisionResultSuccess
+//     over: DndElement
+// }
 
 export type DndPointerEvent = React.PointerEvent | PointerEvent
 
@@ -21,9 +22,9 @@ export interface DndEvents {
     onDragEnd(options: DndEventOptions): unknown
     onDragMove(options: DndEventOptions): unknown
     onDragOverLeave(options: DndEventOptions): unknown
-    onDragOverStart(options: DndDropEventOptions): unknown
-    onDragOverMove(options: DndDropEventOptions): unknown
-    onDrop(options: DndDropEventOptions): unknown
+    onDragOverStart(options: DndEventOptions): unknown
+    onDragOverMove(options: DndEventOptions): unknown
+    onDrop(options: DndEventOptions): unknown
 }
 
 export interface DndElementEvents extends DndEvents {

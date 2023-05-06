@@ -22,7 +22,6 @@ export class DndElement {
     initialPoint: Vec2
     isActive: boolean
     isOver: boolean
-    lastCollision?: CollisionResultSuccess
     transform: Transform
 
     draggable: DndElementOptions['draggable']
@@ -77,30 +76,26 @@ export class DndElement {
     public onDragMove(ev: DndPointerEvent) {
         this.movementDelta.x = -(this.initialPoint.x - ev.pageX)
         this.movementDelta.y = -(this.initialPoint.y - ev.pageY)
-
         this.callbacks?.onDragMove?.(createEventOptions(ev))
     }
 
-    public onDrop(ev: DndPointerEvent, collision: CollisionResultSuccess) {
-        this.callbacks?.onDrop?.(createEventOptions(ev, collision))
+    public onDrop(ev: DndPointerEvent) {
+        this.callbacks?.onDrop?.(createEventOptions(ev))
     }
-    public onDragOverStart(ev: DndPointerEvent, collision: CollisionResultSuccess) {
+    public onDragOverStart(ev: DndPointerEvent,) {
         const context = Context.getState()
 
         context.overElement?.onDragOverLeave?.(ev)
         context.overElement = this
         this.isOver = true
-        this.lastCollision = collision
 
-        this.callbacks?.onDragOverStart?.(createEventOptions(ev, collision))
+        this.callbacks?.onDragOverStart?.(createEventOptions(ev))
     }
-    public onDragOverMove(ev: DndPointerEvent, collision: CollisionResultSuccess) {
-        this.lastCollision = collision
-        this.callbacks?.onDragOverMove?.(createEventOptions(ev, collision))
+    public onDragOverMove(ev: DndPointerEvent) {
+        this.callbacks?.onDragOverMove?.(createEventOptions(ev))
     }
     public onDragOverLeave(ev: DndPointerEvent) {
         this.isOver = false
-        this.lastCollision = undefined
         this.callbacks?.onDragOverLeave?.(createEventOptions(ev))
     }
     public onActive(ev: DndPointerEvent) {

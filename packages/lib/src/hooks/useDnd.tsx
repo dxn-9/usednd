@@ -15,13 +15,13 @@ export interface DirectionType {
 
 type OverType =
     | {
-        isOver: true
-        direction: DirectionType
-    }
+          isOver: true
+          direction: DirectionType
+      }
     | {
-        isOver: false
-        direction: null
-    }
+          isOver: false
+          direction: null
+      }
 
 function getSyntethicListeners(id: UniqueId, options: DndElementOptions) {
     // console.log('id ', id)
@@ -83,7 +83,7 @@ export const useDnd = (
                 callbacks?.onDragStart?.(o)
             },
             onDragEnd: (o) => {
-                if (nodeRef.current) nodeRef.current.style.zIndex = ""
+                if (nodeRef.current) nodeRef.current.style.zIndex = ''
                 startTransition(() => {
                     setActive(false)
                     setTransform({ x: 0, y: 0, z: 0, scale: 1 })
@@ -103,6 +103,7 @@ export const useDnd = (
                 setOver({ isOver: false, direction: null })
             },
             onDragOverMove: (o) => {
+                if (!o.collision) return
                 const direction = o.collision.pointOfContact.toDirection()
                 const sameDir = compareObjects(direction, over.direction)
                 if (!sameDir) {
@@ -110,10 +111,9 @@ export const useDnd = (
                 }
             },
             onDragOverStart: (o) => {
-                if (o.collision.pointOfContact) {
-                    const direction = o.collision.pointOfContact.toDirection()
-                    setOver({ isOver: true, direction })
-                }
+                if (!o.collision) return
+                const direction = o.collision.pointOfContact.toDirection()
+                setOver({ isOver: true, direction })
             },
         }),
         [callbacks]

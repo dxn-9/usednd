@@ -10,19 +10,18 @@ export class Vec2 {
     }
 
     public toDirection(): DirectionType {
-        this.normalize()
+
+        const normalized = this.normalize()
 
         return {
-            bottom: this.y > 0,
-            top: this.y < 0,
-            left: this.x < 0,
-            right: this.x > 0,
+            bottom: normalized.y > 0,
+            top: normalized.y < 0,
+            left: normalized.x < 0,
+            right: normalized.x > 0,
         }
     }
-    public normalize() {
+    public normalize(): Vec2 {
         const sum = Math.abs(this.x) + Math.abs(this.y)
-        this.x = this.x / sum
-        this.y = this.y / sum
-        return this
+        return new Vec2(this.x / sum, this.y / sum)
     }
 }

@@ -86,7 +86,7 @@ const Scenario = () => {
                             const copy = JSON.parse(JSON.stringify(prev)) as Folder[]
                             const a_folderI = a_data.order[0]
                             const o_folderI = o_data.order[0]
-                            const direction = ev.over?.lastCollision?.pointOfContact?.toDirection()
+                            const direction = ev.collision?.pointOfContact?.toDirection()
                             const modifier = direction?.bottom ? 1 : 0
                             const activeFolder = copy[a_folderI]
 
@@ -127,7 +127,7 @@ const Scenario = () => {
                             const a_subfolder = a_data.order[1]
 
                             const activeFolder = copy[a_folder].subfolders?.[a_subfolder] as Folder
-                            const direction = ev.over?.lastCollision?.pointOfContact?.toDirection()
+                            const direction = ev.collision?.pointOfContact?.toDirection()
                             let modifier = direction?.bottom ? 1 : 0
                             modifier += a_folder === o_folder && a_subfolder < o_subfolder ? -1 : 0
 

@@ -5,35 +5,59 @@ import React, { useRef, useState } from 'react'
 
 const Scenario = () => {
     const boxesCount = 10
-    const [droppedMap, setDroppedMap] = useState({
-        ...Array.from({ length: boxesCount }, () => 0),
-    })
+    const [droppedMap, setDroppedMap] = useState<{ x: number; y: number; count: number }[]>(
+        Array.from({ length: boxesCount }, () => ({ x: Math.random() - 0.5, y: Math.random() - 0.5, count: 0 }))
+    )
+
+    console.log('DROPED MAP', droppedMap, Object.keys(droppedMap))
+    const [debugLine, setDebugLine] = useState({ x1: 0, y1: 0, x2: 0, y2: 0 })
+
+    // useEffect(() => {
+    //     rand.current = Math.random()
+    // },[droppedMap])
 
     return (
         <DndProvider
-            debug={true}
             outsideThreshold={10000}
             collisionDetection={DndCollision.ClosestPoint}
             onDrop={(options) => {
-                options.over.id
-                setDroppedMap((prev) => ({
-                    ...prev,
-                    [options.over.id]: (prev[options.over.id as keyof typeof prev] as number) + 1,
-                }))
+                setDroppedMap((prev) => {
+                    if (!options.over) return prev
+
+                    const newState = structuredClone(prev)
+                    const prevBox = newState[options.over.id as number]
+                    prevBox.count++
+                    return newState
+                })
+            }}
+            onDragMove={(options) => {
+                console.log(options)
+                if (options.collision?.pointOfContact && options.over) {
+                    const newLine = {
+                        x1: options.event.clientX,
+                        y1: options.event.clientY,
+                        x2: options.collision.pointOfContact.x + options.collision.element.rect.center.x,
+                        y2: options.collision.pointOfContact.y + options.collision.element.rect.center.y,
+                    }
+                    setDebugLine(newLine)
+                }
             }}
         >
+            <svg viewBox={`0 0 ${window.innerWidth} ${window.innerHeight}`}>
+                <line x1={debugLine.x1} x2={debugLine.x2} y1={debugLine.y1} y2={debugLine.y2} stroke="red" />
+            </svg>
             <div className="w-screen h-screen overflow-hidden ">
                 <Draggable />
                 <div className="w-0 h-0 absolute left-1/2 top-1/2 ">
-                    {Object.keys(droppedMap).map((_, i) => (
+                    {droppedMap.map((e, i) => (
                         <Droppable
                             key={i}
                             style={{
-                                left: (Math.random() - 0.5) * 800,
-                                top: (Math.random() - 0.5) * 800,
+                                left: e.x * 800,
+                                top: e.y * 800,
                             }}
                             idKey={i}
-                            droppedCount={droppedMap[i]}
+                            droppedCount={e.count}
                         />
                     ))}
                 </div>
@@ -86,8 +110,9 @@ const Droppable = ({
         <div
             ref={setNode}
             {...listeners}
-            className={`bg-red-600/5 ${over.isOver && 'bg-white/20'} w-${randomWidth.current > 0.5 ? '24' : '48'
-                } h-24 absolute -translate-x-1/2 -translate-y-1/2 ${overStyle}`}
+            className={`bg-red-600/5 ${
+                over.isOver && 'bg-white/20'
+            } w-24 h-24 absolute -translate-x-1/2 -translate-y-1/2 ${overStyle}`}
             {...props}
         >
             Droppable - {idKey} - Dropped: {droppedCount}
