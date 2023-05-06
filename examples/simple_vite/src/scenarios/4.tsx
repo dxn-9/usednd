@@ -1,7 +1,7 @@
 import { DndProvider, useDnd } from '@dandn/usednd'
 import { DndCollision } from '@dandn/usednd'
 import { CSSTransform } from '@dandn/usednd'
-import React, { useRef, useState } from 'react'
+import React, { useState } from 'react'
 
 const Scenario = () => {
     const boxesCount = 10
